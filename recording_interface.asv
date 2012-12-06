@@ -34,8 +34,6 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
-elseif (nargin==1)
-        handles.save_location = varargin{1};
 end
 
 if nargout
@@ -56,14 +54,29 @@ function recording_interface_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for recording_interface
 handles.output = hObject;
+parent_directory = varargin{1}{1};
+handles.subjectname = varargin{2}{;
+status = mkdir(parent_directory{1}, handles.subjectname{1});
+if(~status)
+    % pop up a dialog box to say could not create save location
+    fprintf('Creating save location failed');
+    delete(handles.figure1);
+end
+if(parent_directory{1}(end)=='\')
+    handles.save_location = [parent_directory{1} handles.subjectname{1}];
+else
+    handles.save_location = [parent_directory{1} '\' handles.subjectname{1}];
+end
 addpath('Mex');
 addpath('Config');
 xmlpath='Config/SamplesConfig.xml';
 handles.KinectHandles=mxNiCreateContext(xmlpath);
 % plot_kinect_data(hObject, eventdata, handles);
 handles.timer = timer('ExecutionMode','fixedRate',...
-                    'Period', 1,...
+                    'Period', 0.5,...
                     'TimerFcn', {@plot_kinect_data,handles});
+global count;
+count = 1;
 handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
@@ -114,8 +127,9 @@ if(~isempty(imobj))
     set(imobj, 'Cdata',XYZ);
 else
     axes(handles.Depthdata);
-    imshow(I, 'Parent', handles.RGBdata);
+    imshow(XYZ, 'Parent', handles.Depthdata);
 end
-% XYZ=mxNiDepthRealWorld(handles.KinectHandles);
-% imshow(permute(XYZ,[2 1 3]), 'Parent', handles.Depthdata);
-% drawnow
+global count
+imwrite(I,sprintf('%s/rgb_%d.png',handles.save_location{1}, count),'png')
+imwrite(XYZ,sprintf('%s/depth_%d.png',handles.save_location{1}, count),'png')
+count = count + 1
