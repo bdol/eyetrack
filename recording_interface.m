@@ -54,9 +54,22 @@ function recording_interface_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for recording_interface
 handles.output = hObject;
-handles.save_location = varargin{1};
+parent_directory = varargin{1}{1};
+handles.subjectname = varargin{2}{1};
+status = mkdir(parent_directory, handles.subjectname);
+if(~status)
+    % pop up a dialog box to say could not create save location
+    fprintf('Creating save location failed');
+    delete(handles.figure1);
+end
+if(parent_directory(end)=='\')
+    handles.save_location = [parent_directory handles.subjectname];
+else
+    handles.save_location = [parent_directory '\' handles.subjectname];
+end
 addpath('Mex');
 addpath('Config');
+addpath(handles.save_location);
 xmlpath='Config/SamplesConfig.xml';
 handles.KinectHandles=mxNiCreateContext(xmlpath);
 % plot_kinect_data(hObject, eventdata, handles);
@@ -118,6 +131,6 @@ else
     imshow(XYZ, 'Parent', handles.Depthdata);
 end
 global count
-imwrite(I,sprintf('%s/rgb_%d.png',handles.save_location{1}, count),'png')
-imwrite(XYZ,sprintf('%s/depth_%d.png',handles.save_location{1}, count),'png')
+imwrite(I,sprintf('%s/rgb_%d.png',handles.save_location, count),'png')
+save(sprintf('%s/depth_%d.mat',handles.save_location, count),'XYZ')
 count = count + 1
