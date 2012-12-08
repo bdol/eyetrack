@@ -22,7 +22,7 @@ function varargout = start_app(varargin)
 
 % Edit the above text to modify the response to help start_app
 
-% Last Modified by GUIDE v2.5 06-Dec-2012 09:34:01
+% Last Modified by GUIDE v2.5 07-Dec-2012 23:27:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,6 +53,7 @@ function start_app_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for start_app
 handles.output = hObject;
+handles.device_name = 'kinect';
 % Update handles structure
 guidata(hObject, handles);
 % UIWAIT makes start_app wait for user response (see UIRESUME)
@@ -112,7 +113,8 @@ function Ok_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
 handles.foldername
 handles.subjectname
-recording_interface({handles.foldername},{handles.subjectname});
+handles.device_name
+recording_interface({handles.device_name},{handles.foldername},{handles.subjectname});
 
 
 
@@ -139,4 +141,23 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 handles.subjectname = 'Subject1';
+guidata(hObject, handles);
+
+
+% --- Executes when selected object is changed in uipanel2.
+function uipanel2_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uipanel2 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+switch get(eventdata.NewValue,'Tag') % Get Tag of selected object.
+    case 'kinectButton'
+        % Code for when radiobutton1 is selected.
+        handles.device_name = 'kinect';
+    case 'XtionButton'
+        % Code for when radiobutton2 is selected.
+        handles.device_name = 'xtion';
+end
 guidata(hObject, handles);

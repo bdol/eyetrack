@@ -54,8 +54,9 @@ function recording_interface_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for recording_interface
 handles.output = hObject;
-parent_directory = varargin{1}{1};
-handles.subjectname = varargin{2}{1};
+device = varargin{1}{1};
+parent_directory = varargin{2}{1};
+handles.subjectname = varargin{3}{1};
 status = mkdir(parent_directory, handles.subjectname);
 if(~status)
     % pop up a dialog box to say could not create save location
@@ -67,15 +68,16 @@ if(parent_directory(end)=='\')
 else
     handles.save_location = [parent_directory '\' handles.subjectname];
 end
+handles.device_name = [device '_scripts'];
 addpath('Mex');
 addpath('Config');
+addpath(handles.device_name);
 addpath(handles.save_location);
 xmlpath='Config/SamplesConfig.xml';
-handles.KinectHandles=mxNiCreateContext(xmlpath);
-% plot_kinect_data(hObject, eventdata, handles);
+handles.deviceHandles=init_device(xmlpath);
 handles.timer = timer('ExecutionMode','fixedRate',...
                     'Period', 0.5,...
-                    'TimerFcn', {@plot_kinect_data,handles});
+                    'TimerFcn', {@plot_data,handles});
 global count;
 count = 1;
 handles.output = hObject;
@@ -96,6 +98,15 @@ function varargout = recording_interface_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+% - Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject handle to figure1 (see GCBO)
+% eventdata reserved - to be defined in a future version of MATLAB
+% handles structure with handles and user data (see GUIDATA)
+stop_device(handles.deviceHandles);
+i = -1
+% Hint: delete(hObject) closes the figure
+delete(hObject);
 
 % --- Executes on button press in Start.
 function Start_Callback(hObject, eventdata, handles)
@@ -112,10 +123,11 @@ function Stop_Callback(hObject, eventdata, handles)
 stop(handles.timer);
 
 
-function plot_kinect_data(hObject, eventdata, handles)
+function plot_data(hObject, eventdata, handles)
 imobj = findobj('parent',handles.RGBdata, 'type', 'image');
-mxNiUpdateContext(handles.KinectHandles);
-I=mxNiPhoto(handles.KinectHandles); I=permute(I,[3 2 1]);
+update_device_data(handles.deviceHandles);
+I=get_rgb_data(handles.deviceHandles);
+I=permute(I,[3 2 1]);
 if(~isempty(imobj))
     set(imobj, 'Cdata',I);
 else
@@ -123,7 +135,8 @@ else
     imshow(I, 'Parent', handles.RGBdata);
 end
 imobj = findobj('parent',handles.Depthdata, 'type', 'image');
-XYZ=mxNiDepthRealWorld(handles.KinectHandles); XYZ = permute(XYZ,[2 1 3]);
+XYZ= get_depth_data(handles.deviceHandles);
+XYZ = permute(XYZ,[2 1 3]);
 if(~isempty(imobj))
     set(imobj, 'Cdata',XYZ);
 else
