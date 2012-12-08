@@ -22,7 +22,7 @@ function varargout = recording_interface(varargin)
 
 % Edit the above text to modify the response to help recording_interface
 
-% Last Modified by GUIDE v2.5 04-Dec-2012 09:30:53
+% Last Modified by GUIDE v2.5 08-Dec-2012 00:01:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,11 +69,11 @@ else
     handles.save_location = [parent_directory '\' handles.subjectname];
 end
 handles.device_name = [device '_scripts'];
-addpath('Mex');
-addpath('Config');
 addpath(handles.device_name);
+addpath([handles.device_name '/src/Mex']);
+addpath([handles.device_name '/src/Config']);
 addpath(handles.save_location);
-xmlpath='Config/SamplesConfig.xml';
+xmlpath=[handles.device_name '/src/Config/SamplesConfig.xml'];
 handles.deviceHandles=init_device(xmlpath);
 handles.timer = timer('ExecutionMode','fixedRate',...
                     'Period', 0.5,...
@@ -103,6 +103,17 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % hObject handle to figure1 (see GCBO)
 % eventdata reserved - to be defined in a future version of MATLAB
 % handles structure with handles and user data (see GUIDATA)
+stop_device(handles.deviceHandles);
+i = -1
+% Hint: delete(hObject) closes the figure
+delete(hObject);
+
+
+% --- Executes during object deletion, before destroying properties.
+function figure1_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 stop_device(handles.deviceHandles);
 i = -1
 % Hint: delete(hObject) closes the figure
