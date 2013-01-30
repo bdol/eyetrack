@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This was created on OSX 10.8. Make sure you have the lame binaries installed.
+# Brian Dolhansky 2013.
+# bdol@seas.upenn.edu
+
 if [ $# -ne 1 ]
 then
     echo "Usage: make_speech_commands.sh <total no. of commands>"
