@@ -1,0 +1,26 @@
+Includes:
+"C:\Program Files (x86)\OpenNI\Include"
+"C:\Users\varsha\Dropbox\Research\freeglut\include"
+"C:\Users\varsha\Dropbox\Research\workspace\MyNiViewer"
+
+Library Paths:
+"C:\OpenCV2.3\my_build\lib"
+"C:\Users\varsha\Dropbox\Research\freeglut\lib"
+"C:\Program Files (x86)\OpenNI\Lib"
+"C:\Users\varsha\Dropbox\Research\workspace\MyNiViewer"
+"C:\Program Files (x86)\OpenNI\Samples\Bin\Release"
+"C:\Users\varsha\Dropbox\Research\workspace\MyNiViewer\Libs"
+
+Libraries:
+opencv_core230
+freeglut
+opencv_highgui230
+opencv_imgproc230
+OpenNI
+glut32
+glu32
+opengl32
+
+
+In Draw.cpp, add the following line before including gl.h
+#include<Windows.h>
