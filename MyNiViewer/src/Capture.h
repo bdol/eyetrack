@@ -53,7 +53,8 @@ const char* captureGetImageFormatName();
 const char* captureGetIRFormatName();
 const char* captureGetAudioFormatName();
 void captureSingleFrame(int);
-void captureSequenceSpeech(int);
+void captureSequenceStart(int main_delay, int burst_delay, int total_number_commands, int total_burst_count);
+void captureSequenceCommands();
 bool isCapturing();
 
 void getCaptureMessage(char* pMessage);

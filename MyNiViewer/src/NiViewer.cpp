@@ -86,7 +86,7 @@ using namespace glh;
 // --------------------------------
 // Defines
 // --------------------------------
-#define SAMPLE_XML_PATH "../Data/SamplesConfig.xml"
+#define SAMPLE_XML_PATH "../Data/SamplesConfig_Test.xml"
 
 // --------------------------------
 // Types
@@ -159,6 +159,7 @@ void IdleCallback()
 
 		// capture if needed
 		nRetVal = captureFrame();
+		captureSequenceCommands();
 		if (nRetVal != XN_STATUS_OK)
 		{
 			displayMessage("Error capturing frame: '%s'", xnGetStatusString(nRetVal));
@@ -279,6 +280,22 @@ void startCapture(int delay)
 	}
 }
 
+void startCaptureSequence(int)
+{
+	if (g_bPause)
+	{
+		displayMessage("Cannot capture when paused!");
+	}
+	else
+	{
+		int total_num_commands = 5;	// say 1, 2, 3, 4, 5 and then thankyou
+		int main_delay = 3;
+		int burst_delay = 0.5;
+		int total_burst_count = 3;
+		captureSequenceStart(main_delay, burst_delay, total_num_commands, total_burst_count);
+	}
+}
+
 void createKeyboardMap()
 {
 	startKeyboardMap();
@@ -312,7 +329,7 @@ void createKeyboardMap()
 			registerKey('d', "Start (5 sec delay)", startCapture, 5);
 			registerKey('x', "Stop", captureStop, 0);
 			registerKey('c', "Capture current frame only", captureSingleFrame, 0);
-			registerKey('a',"Begin capturing sequence with speech commands", captureSequenceSpeech, 0);
+			registerKey('a',"Begin capturing sequence with speech commands", startCaptureSequence, 0);
 		}
 		endKeyboardGroup();
 		startKeyboardGroup(KEYBOARD_GROUP_DISPLAY);
@@ -626,6 +643,15 @@ int main(int argc, char **argv)
 		printf("Open failed: %s\n", xnGetStatusString(rc));
 		closeSample(ERR_DEVICE);
 	}
+
+// set image capture format to uncompressed
+	captureSetImageFormat(XN_CODEC_UNCOMPRESSED);
+	captureSetDepthFormat(XN_CODEC_UNCOMPRESSED);
+// set image resolution
+	setImageFPS(15);
+	setImageResolution(XN_RES_SXGA);
+	setDepthFPS(30);
+	setDepthResolution(XN_RES_VGA);
 
 	audioInit();
 	captureInit();

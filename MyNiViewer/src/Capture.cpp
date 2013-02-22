@@ -47,6 +47,10 @@ typedef enum
 	NOT_CAPTURING,
 	SHOULD_CAPTURE,
 	CAPTURING,
+	SEQUENCE_SHOULD_CAPTURE,
+	SEQUENCE_BURST_CAPTURE,
+	SEQUENCE_MAIN_CAPTURE,
+	THANKYOU,
 } CapturingState;
 
 typedef enum
@@ -76,6 +80,13 @@ typedef struct CapturingData
 	CapturingState State;
 	XnUInt32 nCapturedFrameUniqueID;
 	char csDisplayMessage[500];
+	int command_count;
+	int sequence_delay;
+	int total_number_commands;
+	XnUInt32 sequence_nStartOn; // time to start, in seconds for sequence capturing
+	int total_bursts;
+	int burst_count;
+	XnUInt32 sequence_burst_delay; // time between bursts of capture during sequence captures
 } CapturingData;
 
 // --------------------------------
@@ -460,6 +471,11 @@ void getCaptureMessage(char* pMessage)
 {
 	switch (g_Capture.State)
 	{
+	case SEQUENCE_SHOULD_CAPTURE:
+	{
+		sprintf(pMessage, "Sequence Capturing will start immediately");
+	}
+	break;
 	case SHOULD_CAPTURE:
 		{
 			XnUInt64 nNow;
@@ -480,6 +496,11 @@ void getCaptureMessage(char* pMessage)
 			}
 		}
 		break;
+	case SEQUENCE_MAIN_CAPTURE:
+	{
+		sprintf(pMessage, "Sequence Capturing in progress...@Command: %d", g_Capture.command_count);
+	}
+	break;
 	default:
 		pMessage[0] = 0;
 	}
@@ -582,45 +603,128 @@ void captureSingleFrame(int)
 	displayMessage("Frames saved with ID %d", num);
 }
 
-void captureSequenceSpeech(int)
+
+void captureSequenceStart(int main_delay, int burst_delay, int total_number_commands, int total_burst_count)
 {
-	std::string str = ("\"C:\\Program Files\\Jampal\\ptts.vbs\" -u command_");
-	int command_count = 1;
-	while(command_count<=5)
+	XnUInt64 nNow;
+	xnOSGetTimeStamp(&nNow);
+	nNow /= 1000;
+
+	g_Capture.sequence_nStartOn = (XnUInt32)nNow + main_delay;
+	g_Capture.State = SEQUENCE_SHOULD_CAPTURE;
+	g_Capture.command_count = 1;
+	g_Capture.sequence_delay = main_delay;
+	g_Capture.total_number_commands = total_number_commands;
+	g_Capture.burst_count = 1;
+	g_Capture.total_bursts = total_burst_count;
+	g_Capture.sequence_burst_delay = burst_delay;
+}
+
+void captureSequenceCommands()
+{
+	XnUInt64 nNow;
+	xnOSGetTimeStamp(&nNow);
+	nNow /= 1000;
+	if ((g_Capture.State == SEQUENCE_SHOULD_CAPTURE)||(g_Capture.State == SEQUENCE_MAIN_CAPTURE)||g_Capture.State == SEQUENCE_BURST_CAPTURE)
 	{
-		std::string command_to_run;
-		command_to_run.append(str);
-		std::stringstream out;
-		out<<command_count;
-		command_to_run.append(out.str());
-		command_to_run.append(".txt");
-		system(command_to_run.c_str());
-		XnUInt64 nNow;
-		xnOSGetTimeStamp(&nNow);
-		nNow /= 1000;
-		g_Capture.nStartOn = (XnUInt32)nNow + 3;
-		// Add a 3 second delay between end of speech and beginning of the capture
-		while(nNow <= g_Capture.nStartOn)
+		// check if time has arrived
+		if (nNow >= g_Capture.sequence_nStartOn)
 		{
-			xnOSGetTimeStamp(&nNow);
-			nNow /= 1000;
-		}
-		int burst_count = 1;
-		captureSingleFrame(0);
-		// burst capture at 1/2 second intervals
-		while(burst_count<3)
-		{
-			xnOSGetTimeStamp(&nNow);
-			nNow /= 1000;
-			g_Capture.nStartOn = (XnUInt32)nNow + 0.5;
-			while(nNow <= g_Capture.nStartOn)
+			if((g_Capture.State == SEQUENCE_MAIN_CAPTURE)||(g_Capture.State == SEQUENCE_SHOULD_CAPTURE))
 			{
+				std::string str = ("\"C:\\Program Files\\Jampal\\ptts.vbs\" -u command_");
+				std::string command_to_run;
+				command_to_run.append(str);
+				std::stringstream out;
+				out<<g_Capture.command_count;
+				command_to_run.append(out.str());
+				command_to_run.append(".txt");
+				system(command_to_run.c_str());
+			}
+
+			captureSingleFrame(0);
+
+			// update burst counter
+			if(g_Capture.burst_count > g_Capture.total_bursts - 1)
+			{
+				// update command counter
+				if(g_Capture.command_count < g_Capture.total_number_commands)
+				{
+					g_Capture.command_count = g_Capture.command_count + 1;
+					// reset burst counter (it will become outside the ifs)
+					g_Capture.burst_count = 0;
+					// update delay to wait for another 3seconds
+					xnOSGetTimeStamp(&nNow);
+					nNow /= 1000;
+					g_Capture.sequence_nStartOn = (XnUInt32)nNow + g_Capture.sequence_delay;
+					g_Capture.State = SEQUENCE_MAIN_CAPTURE;
+				}
+				else
+				{
+					g_Capture.State = THANKYOU;
+					g_Capture.command_count = 1;
+					g_Capture.burst_count = 1;
+				}
+			}
+			else
+			{
+				// update delay to wait for another 0.5seconds
 				xnOSGetTimeStamp(&nNow);
 				nNow /= 1000;
+				g_Capture.sequence_nStartOn = (XnUInt32)nNow + g_Capture.sequence_burst_delay;
+				g_Capture.State = SEQUENCE_BURST_CAPTURE;
 			}
-			captureSingleFrame(0);
-			burst_count++;
+			g_Capture.burst_count = g_Capture.burst_count + 1;
 		}
-		command_count++;
+	}
+	else if(g_Capture.State == THANKYOU)
+	{
+		std::string str = ("\"C:\\Program Files\\Jampal\\ptts.vbs\" -u thankyou.txt");
+		system(str.c_str());
+		g_Capture.State = NOT_CAPTURING;
 	}
 }
+
+//void captureSequenceSpeech(int)
+//{
+//	std::string str = ("\"C:\\Program Files\\Jampal\\ptts.vbs\" -u command_");
+//	int command_count = 1;
+//	while(command_count<=2)
+//	{
+////		std::string command_to_run;
+////		command_to_run.append(str);
+////		std::stringstream out;
+////		out<<command_count;
+////		command_to_run.append(out.str());
+////		command_to_run.append(".txt");
+////		system(command_to_run.c_str());
+//
+//		XnUInt64 nNow;
+//		xnOSGetTimeStamp(&nNow);
+//		nNow /= 1000;
+//		XnUInt32 time_to_start = (XnUInt32)nNow + 3;
+//		// Add a 3 second delay between end of speech and beginning of the capture
+//		while(nNow <= time_to_start)
+//		{
+//			xnOSGetTimeStamp(&nNow);
+//			nNow /= 1000;
+//		}
+//		int burst_count = 1;
+//		captureSingleFrame(0);
+//		// burst capture at 1/2 second intervals
+//		while(burst_count<3)
+//		{
+//			xnOSGetTimeStamp(&nNow);
+//			nNow /= 1000;
+//			time_to_start = (XnUInt32)nNow + 0.5;
+//			while(nNow <= time_to_start)
+//			{
+//				xnOSGetTimeStamp(&nNow);
+//				nNow /= 1000;
+//			}
+//			captureSingleFrame(0);
+//			burst_count++;
+//		}
+//		command_count++;
+//	}
+//}
