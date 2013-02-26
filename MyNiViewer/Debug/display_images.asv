@@ -1,0 +1,54 @@
+function [rgb depth] = display_images(index)
+
+% Those images are stored as raw data, meaning no header.
+% The actual format depends on the configuration being used, but if you 
+% haven't changed it, then the color image is saved as 3 bytes per pixel 
+%(Red, Green, Blue), and the depth map is stored as 16-bit values 
+%(2 bytes per pixel) representing depth in millimeters.
+
+image_xRes = 1280;
+image_yRes = 1024;
+depth_xRes = 640;
+depth_yRes = 480;
+folder = 'CapturedFrames';
+% for i=0:14
+    i=1;
+    str = sprintf('%s\\Image_%d.raw',folder, i);
+    fp=fopen(str, 'rb');
+    d = fread(fp, prod([image_xRes image_yRes 3]));
+    red = d(1:3:end);
+    green = d(2:3:end);
+    blue = d(3:3:end);
+    red = reshape(red,[image_xRes image_yRes]);
+    blue = reshape(blue,[image_xRes image_yRes]);
+    green = reshape(green,[image_xRes image_yRes]);
+    red = red./255;
+    blue = blue./255;
+    green = green./255;
+
+    im = zeros(image_xRes, image_yRes, 3);
+    im(:,:,1) = red;
+    im(:,:,2) = green;
+    im(:,:,3) = blue;
+    im_image = zeros(image_yRes, image_xRes, 3);
+    im_image(:,:,1) = im(:,:,1)';
+    im_image(:,:,2) = im(:,:,2)';
+    im_image(:,:,3) = im(:,:,3)';
+    subplot(1,2,1);
+    imshow(im_image);
+    fclose(fp);
+    
+    % Read Depth images
+    str = sprintf('%s\\Depth_%d.raw',folder, i);
+    fp=fopen(str, 'rb');
+    d = fread(fp, prod([depth_xRes depth_yRes 2]));
+    c = bitor(bitshift(bitor(uint16(0),uint16(d(2:2:end))),8),uint16(d(1:2:end)));
+    c = reshape(c,depth_xRes,depth_yRes);
+    c = fliplr(imrotate(c,-90));
+    subplot(1,2,2);
+    imagesc(c);
+    fclose(fp);
+    
+%     k = waitforbuttonpress;
+%     i
+% end

@@ -48,7 +48,7 @@
 		<Node type="Image" stopOnError="false" />
 		<Configuration>
 				<!-- Uncomment to set requested mode-->
-				<MapOutputMode xRes="1280" yRes="1024" FPS="15"/> 
+				<MapOutputMode xRes="1280" yRes="1024" FPS="30"/> 
 				
 
 				<!-- Uncomment to override global mirror
