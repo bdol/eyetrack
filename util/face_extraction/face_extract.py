@@ -99,7 +99,7 @@ def crop_and_save(img, faces, square_size):
         srcRegion = cv.GetSubRect(img, (croppedX, croppedY, croppedW, croppedH))
         cv.Copy(srcRegion, imgCropped)
 
-        cv.SaveImage("im_crop.png", imgCropped)
+        cv.SaveImage("im_crop.jpg", imgCropped)
 
         face_counter += 1
 

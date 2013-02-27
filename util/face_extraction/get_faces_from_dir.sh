@@ -34,6 +34,6 @@ for f in $IN_FILES
 do
     ./face_extract.py $f $FRONT_CASCADE $PROFILE_CASCADE $3
     IN_FILE=${f%.*}
-    OUT_FILE=$OUT_DIR/${IN_FILE##*/}_cropped.png
-    mv im_crop.png $OUT_FILE
+    OUT_FILE=$OUT_DIR/${IN_FILE##*/}_cropped.jpg
+    mv im_crop.jpg $OUT_FILE
 done
