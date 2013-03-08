@@ -38,7 +38,7 @@ extern NodeCodec g_AudioFormat;
 // --------------------------------
 // Function Declarations
 // --------------------------------
-void captureInit();
+void captureInit(char*);
 void captureBrowse(int);
 void captureStart(int nDelay);
 void captureRestart(int);

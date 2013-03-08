@@ -37,7 +37,7 @@ using namespace xn;
 // --------------------------------
 // Defines
 // --------------------------------
-#define CAPTURED_FRAMES_DIR_NAME "CapturedFrames"
+#define CAPTURED_FRAMES_DIR_NAME captured_frames_dir_name
 
 // --------------------------------
 // Types
@@ -101,11 +101,17 @@ NodeCodec g_AudioFormat;
 
 static const XnCodecID CODEC_DONT_CAPTURE = XN_CODEC_NULL;
 
+char* captured_frames_dir_name = "CapturedFrames";
+
 // --------------------------------
 // Code
 // --------------------------------
-void captureInit()
+void captureInit(char* saveToFolderName)
 {
+	if(strcmp(saveToFolderName, "")!=0)
+	{
+		captured_frames_dir_name = saveToFolderName;
+	}
 	// Depth Formats
 	int nIndex = 0;
 
@@ -506,20 +512,30 @@ void getCaptureMessage(char* pMessage)
 	}
 }
 
-void getImageFileName(int num, char* csName)
+void getImageFileName(int picnum, char* csName, int generate_capture_sequence_filenames=-1)
 {
-	sprintf(csName, "%s/Image_%d.raw", CAPTURED_FRAMES_DIR_NAME, num);
+	// if the capture is for the sequence capture custom routine, then generate the filenames differently
+	if(!generate_capture_sequence_filenames)
+		sprintf(csName, "%s/IM_%d.raw", captured_frames_dir_name, picnum);
+	else
+		sprintf(csName, "%s/IM_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 	//sprintf(csName, "%s/Image_%d.raw", subjectName, num);
 }
 
-void getDepthFileName(int num, char* csName)
+void getDepthFileName(int picnum, char* csName, int generate_capture_sequence_filenames=-1)
 {
-	sprintf(csName, "%s/Depth_%d.raw", CAPTURED_FRAMES_DIR_NAME, num);
+	if(!generate_capture_sequence_filenames)
+		sprintf(csName, "%s/DP_%d.raw", captured_frames_dir_name, picnum);
+	else
+		sprintf(csName, "%s/DP_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 }
 
-void getIRFileName(int num, char* csName)
+void getIRFileName(int picnum, char* csName, int generate_capture_sequence_filenames=-1)
 {
-	sprintf(csName, "%s/IR_%d.raw", CAPTURED_FRAMES_DIR_NAME, num);
+	if(!generate_capture_sequence_filenames)
+		sprintf(csName, "%s/IR_%d.raw", CAPTURED_FRAMES_DIR_NAME, picnum);
+	else
+		sprintf(csName, "%s/IR_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 }
 
 int findUniqueFileName()
@@ -569,16 +585,17 @@ int findUniqueFileName()
 	return num;
 }
 
-void captureSingleFrame(int)
+void captureSingleFrame(int generate_capture_sequence_file_names)
 {
 	int num = findUniqueFileName();
 
 	XnChar csImageFileName[XN_FILE_MAX_PATH];
 	XnChar csDepthFileName[XN_FILE_MAX_PATH];
 	XnChar csIRFileName[XN_FILE_MAX_PATH];
-	getImageFileName(num, csImageFileName);
-	getDepthFileName(num, csDepthFileName);
-	getIRFileName(num, csIRFileName);
+	// if not 0, generate names according to gCapture command_count and burst_count
+	getImageFileName(num, csImageFileName, generate_capture_sequence_file_names);
+	getDepthFileName(num, csDepthFileName, generate_capture_sequence_file_names);
+	getIRFileName(num, csIRFileName, generate_capture_sequence_file_names);
 
 	const ImageMetaData* pImageMD = getImageMetaData();
 	if (pImageMD != NULL)
@@ -601,6 +618,7 @@ void captureSingleFrame(int)
 	g_Capture.nCapturedFrameUniqueID = num + 1;
 
 	displayMessage("Frames saved with ID %d", num);
+//	displayMessage("Directory: %s", captured_frames_dir_name);
 }
 
 
@@ -642,7 +660,7 @@ void captureSequenceCommands()
 				system(command_to_run.c_str());
 			}
 
-			captureSingleFrame(0);
+			captureSingleFrame(1);
 
 			// update burst counter
 			if(g_Capture.burst_count > g_Capture.total_bursts - 1)

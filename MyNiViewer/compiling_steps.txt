@@ -24,3 +24,7 @@ opengl32
 
 In Draw.cpp, add the following line before including gl.h
 #include<Windows.h>
+
+Download jampal's ptts from http://sourceforge.net/projects/jampal/files/
+FOllow the instructions and allow it to install to the default path
+C:\Program Files\Jampal

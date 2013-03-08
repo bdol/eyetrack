@@ -584,22 +584,22 @@ int main(int argc, char **argv)
 {
 	XnBool bChooseDevice = false;
 	const char* csRecordingName = NULL;
-	const char* subjectName = NULL;
+	char* saveTo = "";
 
 	if (argc > 1)
 	{
-		if (strcmp(argv[1], "-devices") == 0)
+		if(strcmpi(argv[1], "-saveTo") == 0)
+		{
+			saveTo = argv[2];
+		}
+		else if (strcmp(argv[1], "-devices") == 0)
 		{
 			bChooseDevice = TRUE;
 		}
-		else if(strcmp(argv[1], "-subjectName"))
-		{
-			subjectName = argv[2];
-		}
-		else
-		{
-			csRecordingName = argv[1];
-		}
+//		else
+//		{
+//			csRecordingName = argv[1];
+//		}
 	}
 
 	if (csRecordingName != NULL)
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
 	setDepthResolution(XN_RES_VGA);
 
 	audioInit();
-	captureInit();
+	captureInit(saveTo);
 	statisticsInit();
 
 	reshaper.zNear = 1;

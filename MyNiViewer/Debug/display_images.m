@@ -10,7 +10,7 @@ image_xRes = 1280;
 image_yRes = 1024;
 depth_xRes = 640;
 depth_yRes = 480;
-folder = 'brian_natural';
+folder = 'natural';
 str = sprintf('%s\\Image_%d.raw',folder, i);
     try
         fp=fopen(str, 'rb');
@@ -48,9 +48,13 @@ str = sprintf('%s\\Image_%d.raw',folder, i);
         d = fread(fp, prod([depth_xRes depth_yRes 2]));
         depth = bitor(bitshift(bitor(uint16(0),uint16(d(2:2:end))),8),uint16(d(1:2:end)));
         depth = reshape(depth,depth_xRes,depth_yRes);
-        depth = fliplr(imrotate(depth,-90));
+%         depth = fliplr(imrotate(depth,-90));
+        depth = imrotate(depth, -270);
     %     subplot(1,2,2);
     %     imagesc(depth);
+        index = find(depth>800);
+        depth(index) = 0;
+        
         fclose(fp);
     catch exception
         depth = [];

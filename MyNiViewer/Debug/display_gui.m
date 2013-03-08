@@ -22,7 +22,7 @@ function varargout = display_gui(varargin)
 
 % Edit the above text to modify the response to help display_gui
 
-% Last Modified by GUIDE v2.5 21-Feb-2013 19:37:21
+% Last Modified by GUIDE v2.5 04-Mar-2013 10:18:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,15 +55,21 @@ function display_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for display_gui
 handles.rgb_size = [1024 1280];
 handles.depth_size = [480 640];
+handles.rgb_image = zeros(handles.rgb_size);
+handles.depth_image = zeros(handles.depth_size);
 handles.output = hObject;
 set(handles.rgb,'NextPlot','add');
 axes(handles.rgb);
-imshow(zeros(handles.rgb_size));
+imshow(handles.rgb_image);
 set(handles.depth,'NextPlot','add');
 axes(handles.depth);
-imshow(zeros(handles.depth_size));
+imagesc(handles.depth_image); colormap('jet');
 set(handles.depth,'NextPlot','add');
 handles.image_index = -1;
+handles.eyesel_status = 1;      % no region selected yet
+% Add paths
+addpath(genpath('C:\Users\varsha\Dropbox\Research\segbench'));
+addpath(genpath('C:\Users\varsha\Dropbox\Research\workspace\eyetrack_data\'));
 % Update handles structure
 guidata(hObject, handles);
 
@@ -91,16 +97,16 @@ function Previous_Callback(hObject, eventdata, handles)
 % update image index
 handles.image_index = handles.image_index - 1;
 if(handles.image_index>-1)
-    [rgb depth] = display_images(handles.image_index);
-    if(length(rgb)>0)
+    [handles.rgb_image handles.depth_image] = display_images(handles.image_index);
+    if(length(handles.rgb_image)>0)
         set(handles.rgb,'NextPlot','add');
         axes(handles.rgb);
-        imshow(rgb);
+        imshow(handles.rgb_image);
     end
-    if(length(depth)>0)
+    if(length(handles.depth_image)>0)
         set(handles.depth,'NextPlot','add');
         axes(handles.depth);
-        imshow(depth);
+        imagesc(handles.depth_image); colormap('jet');
         set(handles.depth,'NextPlot','add');
     end
     % Update handles structure
@@ -115,17 +121,34 @@ function Next_Callback(hObject, eventdata, handles)
 
 % Update image index
 handles.image_index = handles.image_index + 1;
-[rgb depth] = display_images(handles.image_index);
-if(length(rgb)>0)
+[handles.rgb_image handles.depth_image] = display_images(handles.image_index);
+if(length(handles.rgb_image)>0)
     set(handles.rgb,'NextPlot','add');
     axes(handles.rgb);
-    imshow(rgb);
+    imshow(handles.rgb_image);
 end
-if(length(depth)>0)
+if(length(handles.depth_image)>0)
     set(handles.depth,'NextPlot','add');
     axes(handles.depth);
-    imagesc(depth);
+    imagesc(handles.depth_image); colormap('jet');
     set(handles.depth,'NextPlot','add');
 end
 % Update handles structure
 guidata(hObject, handles);
+
+
+% --- Executes on button press in prob_boundary.
+function prob_boundary_Callback(hObject, eventdata, handles)
+% hObject    handle to prob_boundary (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if(handles.eyesel_status==1)
+    handles.eyesel_status = 2;  % crosshair comes up asking user to select a rectangular region
+    [X Y] = ginput(2);
+    X = round(X);
+    Y = round(Y);
+    [pb,theta] = pbBGTG(handles.rgb_image(Y(1):Y(2), X(1):X(2)));
+    pb_mod = max(0,min(1,pb));
+    figure;
+    imshow(pb_mod);
+end
