@@ -1,0 +1,7 @@
+Brian Dolhansky, 2013.
+bdol@seas.upenn.edu
+
+This directory contains utilities to automatically crop faces from all images in
+an input directory. As an example, run the following:
+
+./get_faces_from_dir.sh ./faces ./crops 400
