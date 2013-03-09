@@ -288,9 +288,9 @@ void startCaptureSequence(int)
 	}
 	else
 	{
-		int total_num_commands = 5;	// say 1, 2, 3, 4, 5 and then thankyou
-		int main_delay = 3;
-		int burst_delay = 0.5;
+		int total_num_commands = 9;	// say 1, 2, 3, 4, 5 and then thankyou
+		int main_delay = 2;
+		int burst_delay = 0.2;
 		int total_burst_count = 3;
 		captureSequenceStart(main_delay, burst_delay, total_num_commands, total_burst_count);
 	}

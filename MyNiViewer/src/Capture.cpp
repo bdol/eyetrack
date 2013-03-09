@@ -516,7 +516,7 @@ void getImageFileName(int picnum, char* csName, int generate_capture_sequence_fi
 {
 	// if the capture is for the sequence capture custom routine, then generate the filenames differently
 	if(!generate_capture_sequence_filenames)
-		sprintf(csName, "%s/IM_%d.raw", captured_frames_dir_name, picnum);
+		sprintf(csName, "%s/IM_For_Katie_%d.raw", captured_frames_dir_name, picnum);
 	else
 		sprintf(csName, "%s/IM_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 	//sprintf(csName, "%s/Image_%d.raw", subjectName, num);
@@ -525,7 +525,7 @@ void getImageFileName(int picnum, char* csName, int generate_capture_sequence_fi
 void getDepthFileName(int picnum, char* csName, int generate_capture_sequence_filenames=-1)
 {
 	if(!generate_capture_sequence_filenames)
-		sprintf(csName, "%s/DP_%d.raw", captured_frames_dir_name, picnum);
+		sprintf(csName, "%s/DP_For_Katie_%d.raw", captured_frames_dir_name, picnum);
 	else
 		sprintf(csName, "%s/DP_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 }
@@ -533,7 +533,7 @@ void getDepthFileName(int picnum, char* csName, int generate_capture_sequence_fi
 void getIRFileName(int picnum, char* csName, int generate_capture_sequence_filenames=-1)
 {
 	if(!generate_capture_sequence_filenames)
-		sprintf(csName, "%s/IR_%d.raw", CAPTURED_FRAMES_DIR_NAME, picnum);
+		sprintf(csName, "%s/IR_For_Katie_%d.raw", CAPTURED_FRAMES_DIR_NAME, picnum);
 	else
 		sprintf(csName, "%s/IR_%d_%d.raw", captured_frames_dir_name, g_Capture.command_count, g_Capture.burst_count);
 }
@@ -702,47 +702,3 @@ void captureSequenceCommands()
 		g_Capture.State = NOT_CAPTURING;
 	}
 }
-
-//void captureSequenceSpeech(int)
-//{
-//	std::string str = ("\"C:\\Program Files\\Jampal\\ptts.vbs\" -u command_");
-//	int command_count = 1;
-//	while(command_count<=2)
-//	{
-////		std::string command_to_run;
-////		command_to_run.append(str);
-////		std::stringstream out;
-////		out<<command_count;
-////		command_to_run.append(out.str());
-////		command_to_run.append(".txt");
-////		system(command_to_run.c_str());
-//
-//		XnUInt64 nNow;
-//		xnOSGetTimeStamp(&nNow);
-//		nNow /= 1000;
-//		XnUInt32 time_to_start = (XnUInt32)nNow + 3;
-//		// Add a 3 second delay between end of speech and beginning of the capture
-//		while(nNow <= time_to_start)
-//		{
-//			xnOSGetTimeStamp(&nNow);
-//			nNow /= 1000;
-//		}
-//		int burst_count = 1;
-//		captureSingleFrame(0);
-//		// burst capture at 1/2 second intervals
-//		while(burst_count<3)
-//		{
-//			xnOSGetTimeStamp(&nNow);
-//			nNow /= 1000;
-//			time_to_start = (XnUInt32)nNow + 0.5;
-//			while(nNow <= time_to_start)
-//			{
-//				xnOSGetTimeStamp(&nNow);
-//				nNow /= 1000;
-//			}
-//			captureSingleFrame(0);
-//			burst_count++;
-//		}
-//		command_count++;
-//	}
-//}
