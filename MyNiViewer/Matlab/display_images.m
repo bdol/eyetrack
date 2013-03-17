@@ -1,4 +1,4 @@
-function [rgb depth folder] = display_images(i)
+function [rgb depth folder] = display_images(i, j)
 
 % Those images are stored as raw data, meaning no header.
 % The actual format depends on the configuration being used, but if you 
@@ -10,8 +10,9 @@ image_xRes = 1280;
 image_yRes = 1024;
 depth_xRes = 640;
 depth_yRes = 480;
-folder = 'brian_natural';
-str = sprintf('%s\\Image_%d.raw',folder, i);
+folder = '..\\..\\..\\eyetrack_data\\000.2.E';
+str = sprintf('%s\\IM_%d_%d.raw',folder, i, j);
+fprintf('%s\n',str);
     try
         fp=fopen(str, 'rb');
         d = fread(fp, prod([image_xRes image_yRes 3]));
@@ -42,14 +43,14 @@ str = sprintf('%s\\Image_%d.raw',folder, i);
     end    
     
     % Read Depth images
-    str = sprintf('%s\\Depth_%d.raw',folder, i);
+    str = sprintf('%s\\DP_%d_%d.raw',folder, i, j);
     try
         fp=fopen(str, 'rb');
         d = fread(fp, prod([depth_xRes depth_yRes 2]));
         depth = bitor(bitshift(bitor(uint16(0),uint16(d(2:2:end))),8),uint16(d(1:2:end)));
         depth = reshape(depth,depth_xRes,depth_yRes);
 %         depth = fliplr(imrotate(depth,-90));
-        
+        depth = imrotate(depth, -270);
     %     subplot(1,2,2);
     %     imagesc(depth);
         index = find(depth>800);

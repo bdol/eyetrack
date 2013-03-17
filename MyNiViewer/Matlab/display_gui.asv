@@ -65,7 +65,8 @@ set(handles.depth,'NextPlot','add');
 axes(handles.depth);
 imagesc(handles.depth_image); colormap('jet');
 set(handles.depth,'NextPlot','add');
-handles.image_index = -1;
+handles.number_index = 0;
+handles.burst_index = 0;
 handles.eyesel_status = 1;      % no region selected yet
 % Add paths
 addpath(genpath('C:\Users\varsha\Dropbox\Research\segbench'));
@@ -95,6 +96,11 @@ function Previous_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % update image index
+if(handles.burst_index>0)
+    handles.burst_index = handles.burst_index - 1;
+elseif(handles.number_index>0)
+    handles.number_index
+end
 handles.image_index = handles.image_index - 1;
 if(handles.image_index>-1)
     [handles.rgb_image handles.depth_image] = display_images(handles.image_index);
