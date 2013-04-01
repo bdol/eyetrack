@@ -20,3 +20,5 @@ for d = 1:numel(dirs)
         imwrite(I, [num_out_dir '/' im_name '.png'], 'png');
     end
 end
+
+fprintf('Done!\n');
