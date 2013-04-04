@@ -17,6 +17,7 @@ for path, subdirs, files in os.walk(root):
             continue
 
         print "Processing",fName
-        subprocess.call([exe, fName, outDir+"/face_"+name])
+        folder = os.path.basename(os.path.normpath(path))
+        subprocess.call([exe, fName, outDir+"/face_"+folder+"_"+name])
 
 
