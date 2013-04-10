@@ -69,7 +69,7 @@ void Draw(cv::Mat &image,cv::Mat &shape,cv::Mat &con,cv::Mat &tri,cv::Mat &visi)
     cv::line(image,p1,p2,c);
   }
   //draw connections
-  c = CV_RGB(0,0,255);
+  c = CV_RGB(255,255,255);
   for(i = 0; i < con.cols; i++){
     if(visi.at<int>(con.at<int>(0,i),0) == 0 ||
        visi.at<int>(con.at<int>(1,i),0) == 0)continue;
@@ -123,12 +123,7 @@ int main(int argc, const char** argv)
     cv::Mat con=FACETRACKER::IO::LoadCon(conFile);
 
     cv::Mat frame,gray,im; double fps=0; char sss[256]; std::string text; 
-    //CvCapture* camera = cvCreateCameraCapture(CV_CAP_ANY); if(!camera)return -1;
     int64 t1,t0 = cvGetTickCount(); int fnum=0;
-    //cvNamedWindow("Face Tracker",1);
-    //std::cout << "Hot keys: "        << std::endl
-        //<< "\t ESC - quit"     << std::endl
-        //<< "\t d   - Redetect" << std::endl;
 
     bool failed = true;
 
