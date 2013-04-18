@@ -1,0 +1,3 @@
+// the configured options for cis580_hw4
+#pragma once
+#define IMAGES_PATH "@IMAGES_PATH@"
