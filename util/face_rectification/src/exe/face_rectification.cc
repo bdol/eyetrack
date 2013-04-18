@@ -34,6 +34,7 @@ Mat getCorrespondenceMatrix(Mat &shape)
     }
 
 
+
     return X;
 }
 
@@ -130,6 +131,54 @@ Mat rectifyImage(const Mat &A, const Mat &im, size_t N)
   return rectified;
 }
 
+void Draw(cv::Mat &image,cv::Mat &shape,cv::Mat &con,cv::Mat &tri,cv::Mat &visi)
+{
+  int i,n = shape.rows/2; cv::Point p1,p2; cv::Scalar c;
+
+  //draw triangulation
+  c = CV_RGB(0,0,0);
+  for(i = 0; i < tri.rows; i++){
+    if(visi.at<int>(tri.at<int>(i,0),0) == 0 ||
+       visi.at<int>(tri.at<int>(i,1),0) == 0 ||
+       visi.at<int>(tri.at<int>(i,2),0) == 0)continue;
+    p1 = cv::Point(shape.at<double>(tri.at<int>(i,0),0),
+       shape.at<double>(tri.at<int>(i,0)+n,0));
+    p2 = cv::Point(shape.at<double>(tri.at<int>(i,1),0),
+       shape.at<double>(tri.at<int>(i,1)+n,0));
+    cv::line(image,p1,p2,c);
+    p1 = cv::Point(shape.at<double>(tri.at<int>(i,0),0),
+       shape.at<double>(tri.at<int>(i,0)+n,0));
+    p2 = cv::Point(shape.at<double>(tri.at<int>(i,2),0),
+       shape.at<double>(tri.at<int>(i,2)+n,0));
+    cv::line(image,p1,p2,c);
+    p1 = cv::Point(shape.at<double>(tri.at<int>(i,2),0),
+       shape.at<double>(tri.at<int>(i,2)+n,0));
+    p2 = cv::Point(shape.at<double>(tri.at<int>(i,1),0),
+       shape.at<double>(tri.at<int>(i,1)+n,0));
+    cv::line(image,p1,p2,c);
+  }
+  //draw connections
+  c = CV_RGB(255,255,255);
+  for(i = 0; i < con.cols; i++){
+    // The eye connections are at index 30<i
+        if(visi.at<int>(con.at<int>(0,i),0) == 0 ||
+           visi.at<int>(con.at<int>(1,i),0) == 0)continue;
+        p1 = cv::Point(shape.at<double>(con.at<int>(0,i),0),
+               shape.at<double>(con.at<int>(0,i)+n,0));
+        p2 = cv::Point(shape.at<double>(con.at<int>(1,i),0),
+               shape.at<double>(con.at<int>(1,i)+n,0));
+        cv::line(image,p1,p2,c,1);
+  }
+  //draw points
+  for(i = 0; i < n; i++){    
+        if(visi.at<int>(i,0) == 0)continue;
+        p1 = cv::Point(shape.at<double>(i,0),shape.at<double>(i+n,0));
+        c = CV_RGB(255,0,0); cv::circle(image,p1,2,c);
+  }
+  
+  return;
+}
+
 int main(int argc, const char** argv)
 {
     if (argc<3) {
@@ -171,7 +220,8 @@ int main(int argc, const char** argv)
         frame = I;
         if(scale == 1)im = frame; 
         else cv::resize(frame,im,cv::Size(scale*frame.cols,scale*frame.rows));
-        cv::flip(im,im,1); cv::cvtColor(im,gray,CV_BGR2GRAY);
+        //cv::flip(im,im,1); 
+        cv::cvtColor(im,gray,CV_BGR2GRAY);
 
         // Track the image
         vector<int> wSize; if(failed)wSize = wSize2; else wSize = wSize1; 
@@ -181,13 +231,39 @@ int main(int argc, const char** argv)
             // We assume that the image list file contains the canonical pose first
             if (i==0) {
                 canonicalCorresp = getCorrespondenceMatrix(model._shape);
+                ofstream f;
+                stringstream sc; 
+                sc << outDir << "H_" << i << ".txt";
+                f.open(sc.str().c_str());
+                for (int r=0; r<canonicalCorresp.rows; r++) {
+                    Vec2d p = canonicalCorresp.at<Vec2d>(r);
+                    f << p[0] << " " << p[1] << "\n";
+                }
+                f.close();
             } else {
                 Mat currentCorresp = getCorrespondenceMatrix(model._shape);
                 Mat H = fitHomography(canonicalCorresp, currentCorresp);
                 Mat rectified = rectifyImage(H, im, 500);
-                stringstream s; 
-                s << outDir << i << ".png";
-                imwrite(s.str(), rectified);
+                //stringstream s; 
+                //s << outDir << i << ".png";
+                //imwrite(s.str(), rectified);
+                //ofstream f;
+                //f.open("current.txt");
+                //f << currentCorresp;
+                //f.close();
+                //f.open("H.txt");
+                //f << H;
+                //f.close();
+
+                ofstream f;
+                stringstream sc; 
+                sc << outDir << "H_" << i << ".txt";
+                f.open(sc.str().c_str());
+                for (int r=0; r<currentCorresp.rows; r++) {
+                    Vec2d p = currentCorresp.at<Vec2d>(r);
+                    f << p[0] << " " << p[1] << "\n";
+                }
+                f.close();
             }
 
             Point centroid = determineFaceCentroid(model._shape);
@@ -197,7 +273,10 @@ int main(int argc, const char** argv)
                                     FACE_CROP_WIDTH);
             Mat face = im(faceRect).clone();
 
-            //Draw(im,model._shape,con,tri,model._clm._visi[idx]); 
+            Draw(im,model._shape,con,tri,model._clm._visi[idx]); 
+                stringstream s; 
+                s << outDir << i << ".png";
+                imwrite(s.str(), im);
         }else{
             if(show){cv::Mat R(im,cvRect(0,0,150,50)); R = cv::Scalar(0,0,255);}
             model.FrameReset(); failed = true;
