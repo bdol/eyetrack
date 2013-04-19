@@ -1,4 +1,3 @@
-clear;
 corresp = importdata('fileCorresp.txt');
 %%
 w = 100;
@@ -25,17 +24,26 @@ for i=1:numel(corresp)
         fprintf('Error: no corresp. exists for %s\n', imPath);
         continue;
     end
-    
-    im = flipdim(imread(imPath), 2);
+%     
+%     if ~isempty(strfind(line, '1019'))
+%         im = flipdim(imread(imPath), 2);
+%         close all; imshow(im); hold on;
+%         for j=l_idx
+%             plot(corr(j, 1), corr(j, 2), 'gx'); hold on;
+%         end
+%         for j=r_idx
+%             plot(corr(j, 1), corr(j, 2), 'bx'); hold on;
+%         end
+%         keyboard;
+%     end
+
     outPath = strrep(imPath, 'png_data', outDir);
-    
     % TODO: do this right...
     posLabel = imPath(42);
     imName = outPath(43:end);
     imName(end-3:end) = '';
     outPath(42:end) = '';
     %
-    
     outPath = [outPath '/' posLabel '/'];
     
     if ~exist(outPath, 'dir')
@@ -45,6 +53,8 @@ for i=1:numel(corresp)
     eye_r = crop_eye(im, corr(r_idx, :), w, h);
     eye_l = crop_eye(im, corr(l_idx, :), w, h);
     
-    imwrite(eye_l, [outPath imName '_left.png'], 'png');
-    imwrite(eye_r, [outPath imName '_right.png'], 'png');
+    imwrite([outPath imName '_left.png'], 'png');
+    imwrite([outPath imName '_right.png'], 'png');
+    
+    keyboard;
 end
