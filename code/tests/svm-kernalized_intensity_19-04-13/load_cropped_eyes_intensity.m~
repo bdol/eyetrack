@@ -45,7 +45,7 @@ for i=1:9
             S(leftCounter).subj_index = s_index;
             
             leftCounter = leftCounter+1;
-        elseif ~isempty(strfind(D(j).name, 'right')) && isempty(regexp(D(j).name, '_1_[lr]'))
+        elseif ~isempty(strfind(D(j).name, 'right')) && isempty(strfind(D(j).name, '_1_'))
             X_right(rightCounter, :) = I(:)';
             Y_right(rightCounter, 1) = i;
             Y_right(rightCounter, 2) = s_index;

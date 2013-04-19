@@ -36,12 +36,9 @@ addpath libsvm/
 k_linear = @(x, x2)kernel_poly(x, x2, 1);
 k_quadratic = @(x, x2)kernel_poly(x, x2, 2);
 k_cubic = @(x, x2)kernel_poly(x, x2, 3);
-k_gaussian = @(x, x2)kernel_gaussian(x, x2, 100000);
+k_gaussian = @(x, x2)kernel_gaussian(x, x2, 100);
 
-test_error_linear = zeros(N_folds, 1);
-test_error_quadratic = zeros(N_folds, 1);
-test_error_cubic = zeros(N_folds, 1);
-test_error_gaussian = zeros(N_folds, 1);
+test_error_ = zeros(N_folds, 1);
 for i=1:N_folds
     test_idx = logical(test_fold_idx(:, i));
     X_train = X(~test_idx, :);
@@ -49,12 +46,7 @@ for i=1:N_folds
     X_test = X(test_idx, :);
     Y_test = Y(test_idx);
     
-%     [test_error_linear(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_linear); 
-%     [test_error_quadratic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_quadratic); 
-%     [test_error_cubic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_cubic); 
-    [test_error_gaussian(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-        Y_test, k_gaussian); 
+    [test_error(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
+        Y_test, k_linear); 
+    
 end
