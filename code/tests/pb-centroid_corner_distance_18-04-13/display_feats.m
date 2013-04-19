@@ -1,4 +1,4 @@
-function display_feats
+function run_test
 
 addpath(genpath('../../third_party_libs'));
 subj_names = {'images/1225.2.E/', 'images/1206.2.E/', 'images/1219.2.E/', ...
