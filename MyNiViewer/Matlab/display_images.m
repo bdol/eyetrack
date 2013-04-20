@@ -1,4 +1,4 @@
-function [rgb depth folder] = display_images(i, j)
+function [rgb depth folder depth_vals] = display_images(i, j, varargin)
 
 % Those images are stored as raw data, meaning no header.
 % The actual format depends on the configuration being used, but if you 
@@ -10,8 +10,12 @@ image_xRes = 1280;
 image_yRes = 1024;
 depth_xRes = 640;
 depth_yRes = 480;
-folder = '..\\..\\..\\eyetrack_data\\000.2.E';
-str = sprintf('%s\\IM_%d_%d.raw',folder, i, j);
+if nargin<3
+    folder = '/fiddlestix/Users/varsha/Documents/ResearchCode/aligning_depth_rgb/images/1201.2.E';
+else
+    folder = varargin{1};
+end
+str = sprintf('%s/IM_%d_%d.raw',folder, i, j);
 fprintf('%s\n',str);
     try
         fp=fopen(str, 'rb');
@@ -43,7 +47,7 @@ fprintf('%s\n',str);
     end    
     
     % Read Depth images
-    str = sprintf('%s\\DP_%d_%d.raw',folder, i, j);
+    str = sprintf('%s/DP_%d_%d.raw',folder, i, j);
     try
         fp=fopen(str, 'rb');
         d = fread(fp, prod([depth_xRes depth_yRes 2]));
@@ -51,6 +55,7 @@ fprintf('%s\n',str);
         depth = reshape(depth,depth_xRes,depth_yRes);
 %         depth = fliplr(imrotate(depth,-90));
         depth = imrotate(depth, -270);
+        depth_vals = double(depth);
     %     subplot(1,2,2);
     %     imagesc(depth);
         index = find(depth>800);
@@ -59,4 +64,5 @@ fprintf('%s\n',str);
         fclose(fp);
     catch exception
         depth = [];
+        depth_vals = [];
     end
