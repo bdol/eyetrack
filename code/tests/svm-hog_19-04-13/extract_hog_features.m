@@ -1,10 +1,12 @@
-function [hog_feat sample_hog] = extract_hog_features(images)
+function [hog_feat sample_hog ind num_orient] = extract_hog_features(images)
 
 % HOG Parameters
 cellSize = 10;
+num_orient = 9;
+
 hog_feat = [];
 for i = 1:length(images)
-    sample_hog = vl_hog(im2single(images(i).img), cellSize, 'numOrientations',4) ;
+    sample_hog = vl_hog(im2single(images(i).img), cellSize, 'numOrientations',num_orient) ;
     
     % Each cell's descriptor in a column...each cell's descriptors arranged
     % side by side

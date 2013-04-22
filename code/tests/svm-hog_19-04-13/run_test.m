@@ -1,4 +1,6 @@
 %% ADD PATHS
+clear
+clc
 addpath(genpath('../../../../eyetrack/'));
 subj_names = {'../../../all_images/'};
 % subj_names = {'../../../all_images/cropped_eyes/1027.2.E/'};
@@ -32,7 +34,8 @@ xval_errors_board = zeros(N_folds,tot_board_nums);
 pos_weights = {};
 for board_num = 1:tot_board_nums
     for fold = 1:N_folds
-       [train_mat sample_hog] = extract_hog_features([l_ims(xval(fold).train_indices) r_ims(xval(fold).train_indices)]);
+       training_images = [l_ims(xval(fold).train_indices) r_ims(xval(fold).train_indices)];
+       [train_mat sample_hog ind_rowvec_to_hog num_orient] = extract_hog_features(training_images);
        train_lab = [[l_ims([xval(fold).train_indices]).board_num]'; [r_ims([xval(fold).train_indices]).board_num]'];
        train_lab(train_lab~=board_num) = -1;
        train_lab(train_lab==board_num) = 1;
@@ -51,8 +54,16 @@ for board_num = 1:tot_board_nums
         weights = -weights;
         b = -b;
     end
-    draw_weights_on_hog(sample_hog, weights, 0, sprintf('pos_wts_board_number_%d', board_num));
-    draw_weights_on_hog(sample_hog, weights, 1, sprintf('neg_wts_board_number_%d', board_num));
+    % visualise svm weights on hog
+    % pick a random row of the training matrix to render the hog of
+    random_train_index = randi(length(training_images));
+    size_hog = size(sample_hog);
+    filename = sprintf('svm-wts-number-%d', board_num);
+    draw_weights_on_hog_v2(training_images(random_train_index).img, ...
+        train_mat(random_train_index,:), weights, ind_rowvec_to_hog, ...
+        num_orient, size_hog, filename);
+%     draw_weights_on_hog(sample_hog, weights, 0, sprintf('pos_wts_board_number_%d', board_num));
+%     draw_weights_on_hog(sample_hog, weights, 1, sprintf('neg_wts_board_number_%d', board_num));
 %     % For the nth fold?? display the positive weights
 %     pos_weights{board_num} = w;
 end
