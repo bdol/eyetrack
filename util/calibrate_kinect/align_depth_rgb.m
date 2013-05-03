@@ -82,7 +82,7 @@ ind_rgb_green = sub2ind(new_size,yrgb(:),xrgb(:),2*ones(length(ind),1));
 ind_rgb_blue = sub2ind(new_size,yrgb(:),xrgb(:),3*ones(length(ind),1));
 a(ind_ir_red) = rgb(ind_rgb_red);    a(ind_ir_green) = rgb(ind_rgb_green);    a(ind_ir_blue) = rgb(ind_rgb_blue);
 
-
+%% DISPLAY RESULTS
 % subplot(1,2,2);
 % imshow((a));
 
