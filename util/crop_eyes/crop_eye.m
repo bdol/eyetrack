@@ -7,4 +7,5 @@ E = im(y-h/2:y+h/2-1, x-w/2:x+w/2-1, :);
 crop_x = x-w/2;
 crop_y = y-h/2;
 
+
 end

@@ -1,0 +1,64 @@
+clear;
+corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
+%%
+w = 100;
+h = 50;
+r_idx = 37:42;
+l_idx = 43:48;
+
+outDir = 'cropped_eyes_transformed';
+canon_corresp = gen_canon_corresp_points(w, h, 20, 10);
+close all; figure;
+for i=1:numel(corresp)
+    line = corresp{i};
+    if line(1)=='!' || line(1)=='~'
+        continue
+    end
+    
+    [imPath corrPath] = strtok(line, ' ');
+    if isempty(strfind(imPath, '.2.E'))
+        continue;
+    end
+    % Remove space from front
+    corrPath = corrPath(2:end);
+    try
+        corr = importdata(corrPath);
+    catch
+        fprintf('Error: no corresp. exists for %s\n', imPath);
+        continue;
+    end
+    
+    im = flipdim(imread(imPath), 2);
+    outPath = strrep(imPath, 'png_data', outDir);
+    % TODO: do this right...
+    keyboard;
+    posLabel = imPath(42);
+    imNameStarPos = regexp(outPath, 'IM_\d_\d');
+    imName(end-3:end) = '';
+    outPath(42:end) = '';
+    %
+    outPath = [outPath '/' posLabel '/'];
+    if ~exist(outPath, 'dir')
+        mkdir(outPath);
+    end
+
+    % Calculate raw correspondences relative to the eye centroids
+    centroid_right = calculate_eye_centroid(corr(r_idx, :));
+    centroid_left = calculate_eye_centroid(corr(l_idx, :));    
+    corr_left = bsxfun(@minus, corr(l_idx, :), centroid_left);
+    corr_right = bsxfun(@minus, corr(r_idx, :), centroid_right);
+    
+    % Calculate the homography
+    H_left = findHomography(canon_corresp, corr_left);
+    H_right = findHomography(canon_corresp, corr_right);
+    
+    crop_left = transformEye(w, h, centroid_left, im, H_left);
+    crop_right = transformEye(w, h, centroid_left, im, H_left);
+    
+    imwrite(crop_left, [outPath imName '_left.png'], 'png');
+    imwrite(crop_right, [outPath imName '_right.png'], 'png');
+    
+    i
+    keyboard;
+end
+axis([0 w 0 h]);

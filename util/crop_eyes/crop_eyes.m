@@ -29,12 +29,14 @@ for i=1:numel(corresp)
     im = flipdim(imread(imPath), 2);
     outPath = strrep(imPath, 'png_data', outDir);
     
+    keyboard;
     % TODO: do this right...
     posLabel = imPath(42);
     imName = outPath(43:end);
     imName(end-3:end) = '';
     outPath(42:end) = '';
     %
+    
     
     outPath = [outPath '/' posLabel '/'];
     
