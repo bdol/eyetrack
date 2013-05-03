@@ -1,6 +1,6 @@
 %% Load data
 clear;
-dataPath = '~/code/eyetrack_data/cropped_eyes/';
+dataPath = '~/Desktop/cropped_eyes_transformed/';
 [X_left Y_left X_right Y_right, S] = ...
     load_cropped_eyes_intensity(dataPath);
 
@@ -10,13 +10,14 @@ X = [X_left X_right];
 Y = Y_left(:, 1);
 S_ind = Y_left(:, 2);
 N_subjects = S(end).subj_index;
-N_withold = 4; % Number of subjects to withold per fold
-N_folds = N_subjects/N_withold;
+N_withold = 10; % Number of subjects to withold per fold
+N_folds = floor(N_subjects/N_withold);
 
 % Generate the subject numbers to withold for each fold
 subjs = unique(Y_left(:, 2));
 subjs = subjs(randperm(length(subjs)));
-subjs = reshape(subjs, N_withold, N_folds);
+% Note: some subjects may not be tested with this method
+subjs = reshape(subjs(1:N_withold*N_folds), N_withold, N_folds);
 
 % Generate the index of the samples to withold in each fold
 test_fold_idx = zeros(size(X, 1), N_folds);
@@ -49,12 +50,12 @@ for i=1:N_folds
     X_test = X(test_idx, :);
     Y_test = Y(test_idx);
     
-%     [test_error_linear(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_linear); 
-%     [test_error_quadratic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_quadratic); 
-%     [test_error_cubic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-%         Y_test, k_cubic); 
-    [test_error_gaussian(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
-        Y_test, k_gaussian); 
+    [test_error_linear(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
+        Y_test, k_linear); 
+    [test_error_quadratic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
+        Y_test, k_quadratic); 
+    [test_error_cubic(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
+        Y_test, k_cubic); 
+%     [test_error_gaussian(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
+%         Y_test, k_gaussian); 
 end

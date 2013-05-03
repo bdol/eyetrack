@@ -220,7 +220,7 @@ int main(int argc, const char** argv)
         frame = I;
         if(scale == 1)im = frame; 
         else cv::resize(frame,im,cv::Size(scale*frame.cols,scale*frame.rows));
-        //cv::flip(im,im,1); 
+        cv::flip(im,im,1); 
         cv::cvtColor(im,gray,CV_BGR2GRAY);
 
         // Track the image
@@ -264,19 +264,20 @@ int main(int argc, const char** argv)
                     f << p[0] << " " << p[1] << "\n";
                 }
                 f.close();
+                cout << sc.str() << endl;
             }
 
-            Point centroid = determineFaceCentroid(model._shape);
-            Rect faceRect = Rect(centroid.x-FACE_CROP_WIDTH/2.0, 
-                                    centroid.y-FACE_CROP_WIDTH/2.0,
-                                    FACE_CROP_WIDTH,
-                                    FACE_CROP_WIDTH);
-            Mat face = im(faceRect).clone();
+            //Point centroid = determineFaceCentroid(model._shape);
+            //Rect faceRect = Rect(centroid.x-FACE_CROP_WIDTH/2.0, 
+                                    //centroid.y-FACE_CROP_WIDTH/2.0,
+                                    //FACE_CROP_WIDTH,
+                                    //FACE_CROP_WIDTH);
+            //Mat face = im(faceRect).clone();
 
-            Draw(im,model._shape,con,tri,model._clm._visi[idx]); 
-                stringstream s; 
-                s << outDir << i << ".png";
-                imwrite(s.str(), im);
+            //Draw(im,model._shape,con,tri,model._clm._visi[idx]); 
+                //stringstream s; 
+                //s << outDir << i << ".png";
+                //imwrite(s.str(), im);
         }else{
             if(show){cv::Mat R(im,cvRect(0,0,150,50)); R = cv::Scalar(0,0,255);}
             model.FrameReset(); failed = true;

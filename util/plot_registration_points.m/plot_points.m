@@ -1,10 +1,14 @@
 clear;
 corresp = importdata('fileCorresp.txt');
 %%
+close all;
+figure;
+
 w = 100;
 h = 50;
 r_idx = 37:42;
 l_idx = 43:48;
+
 outDir = 'cropped_eyes';
 
 for i=1:numel(corresp)
@@ -26,27 +30,15 @@ for i=1:numel(corresp)
         continue;
     end
     
-    im = flipdim(imread(imPath), 2);
-    outPath = strrep(imPath, 'png_data', outDir);
+    [cxl, cyl] = crop_eye(corr(r_idx, :), w, h);
+    [cxr, cyr] = crop_eye(corr(l_idx, :), w, h);
     
-    keyboard;
-    % TODO: do this right...
-    posLabel = imPath(42);
-    imName = outPath(43:end);
-    imName(end-3:end) = '';
-    outPath(42:end) = '';
-    %
-    
-    
-    outPath = [outPath '/' posLabel '/'];
-    
-    if ~exist(outPath, 'dir')
-        mkdir(outPath);
+    c = corr(r_idx, :);
+    colors = {'bx', 'kx', 'gx', 'rx', 'mx', 'yx'};
+    for j=1:size(corr(r_idx, :))
+        plot(c(j, 1)-cxr, c(j, 2)-cyr, colors{j}); hold on;
     end
-
-    eye_r = crop_eye(im, corr(r_idx, :), w, h);
-    eye_l = crop_eye(im, corr(l_idx, :), w, h);
     
-    imwrite(eye_l, [outPath imName '_left.png'], 'png');
-    imwrite(eye_r, [outPath imName '_right.png'], 'png');
+    i
+    
 end

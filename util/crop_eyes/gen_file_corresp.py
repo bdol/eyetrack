@@ -55,14 +55,15 @@ while 1:
     expNameBase = os.path.basename(os.path.normpath(subjNumPaths[expNum]))
     outPath =  "/Users/bdol/Desktop/corr_data/"+expNameBase
     corrStrings = []
+    skipFaceTracker = False
     
     # Skip this one, we already did it
     if os.path.exists(outPath+"E/"):
         if os.path.isfile(outPath+"E/H_27.txt"):
-            expNum += 1
-            for i in range(0, 86):
-                imFile.readline()
-            continue
+            #expNum += 1
+            #for i in range(0, 86):
+                #imFile.readline()
+            skipFaceTracker = True 
 
     imFile.readline()
     imCanonical = imFile.readline()
@@ -78,11 +79,12 @@ while 1:
         corrStrings.append([imName.rstrip(), outPath+"N/H_"+str(i)+".txt"])
     f.close()
 
-    skip = False
     if not os.path.exists(outPath+"N/"):
         os.mkdir(outPath+"N/")
     
-    subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"N/"])
+    if not skipFaceTracker:
+        subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"N/"])
+
     # Now write these to the correspondence file
     corrFile.write("!\n")
     corrFile.write(corrStrings[0][0]+" "+corrStrings[0][1]+"\n")
@@ -102,7 +104,9 @@ while 1:
     f.close()
     if not os.path.exists(outPath+"P/"):
         os.mkdir(outPath+"P/")
-    subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"P/"])
+
+    if not skipFaceTracker:
+        subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"P/"])
     # Now write these to the correspondence file
     corrFile.write("~P\n")
     for i in range(0, 27):
@@ -121,14 +125,21 @@ while 1:
     if not os.path.exists(outPath+"E/"):
         os.mkdir(outPath+"E/")
 
-    subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"E/"])
+    # If we need to, extract the registration points
+    if not skipFaceTracker:
+        subprocess.call(["./face_rectification", "frameListTemp.txt", outPath+"E/"])
+
     # Now write these to the correspondence file
     corrFile.write("~E\n")
     for i in range(0, 27):
         corrFile.write(corrStrings[i][0]+" "+corrStrings[i][1]+"\n")
 
     expNum += 1
+    if expNum>len(subjNumPaths)-1:
+        break
 
 corrFile.close()
 imFile.close()
 os.chdir(startPath)
+
+print "Done!"

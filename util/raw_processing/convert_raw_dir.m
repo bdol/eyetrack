@@ -8,16 +8,23 @@ dirs(ismember(dirs,{'.', '..'})) = [];
 for d = 1:numel(dirs)
     im_dir = [raw_dir '/' dirs{d}];
     images = dir([im_dir '/*.raw']);
-    fprintf('Processing images in %s ...\n', im_dir);
-    for i=1:numel(images)
-        I = convert_image([im_dir '/' images(i).name]);
-        [~, im_name] = fileparts(images(i).name);
-        
-        num_out_dir = [out_dir '/' dirs{d}];
-        if ~exist(num_out_dir, 'dir')
-            mkdir(num_out_dir);
+    
+    num_out_dir = [out_dir '/' dirs{d}];
+    if ~exist(num_out_dir, 'dir')
+        mkdir(num_out_dir);
+    end
+    
+    if exist([num_out_dir '/IM_9_3.png'], 'file') > 0
+        fprintf('Files in %s already exist, skipping.\n', im_dir);
+    else
+        fprintf('Processing images in %s ...\n', im_dir);
+        for i=1:numel(images)
+
+            I = convert_image([im_dir '/' images(i).name]);
+            [~, im_name] = fileparts(images(i).name);
+
+            imwrite(I, [num_out_dir '/' im_name '.png'], 'png');
         end
-        imwrite(I, [num_out_dir '/' im_name '.png'], 'png');
     end
 end
 
