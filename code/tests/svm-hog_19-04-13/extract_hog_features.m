@@ -1,7 +1,7 @@
 function [hog_feat sample_hog ind num_orient] = extract_hog_features(images)
 
 % HOG Parameters
-cellSize = 10;
+cellSize = 8;
 num_orient = 9;
 
 hog_feat = [];
