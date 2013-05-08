@@ -1,0 +1,9 @@
+function R = determine_plane_rotation(v1)
+
+[mval mind] = min(abs(v1));
+% v2 = [0; 0; 0];
+v2 = -mval*v1;
+v2
+v2 = v2/norm(v2);
+
+keyboard;
