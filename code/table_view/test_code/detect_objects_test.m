@@ -84,13 +84,6 @@ plot3(Xobj(L==3), Yobj(L==3), Zobj(L==3),'gx');
 %  can determine the actual hulls
 R = determine_plane_rotation(n_est);
 
-% Debug:
-P = [(Xw)'; (Yw)'; (Zw)'];
-P_rot = R*(R'*P);
-X_rot = P_rot(1, :)';
-Y_rot = P_rot(2, :)';
-Z_rot = P_rot(3, :)';
-
 %% Determine the actual hull cube location
 P = [(Xobj)'; (Yobj)'; (Zobj)'];
 P_rot = R'*P;
