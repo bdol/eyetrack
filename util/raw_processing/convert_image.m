@@ -1,4 +1,4 @@
-function I = convert_image(fName)
+function I = convert_image(fName, bumpContrast)
 
 xres_im = 1280;
 yres_im = 1024;
@@ -8,6 +8,8 @@ back_thresh = 850;
 
 fp=fopen(fName, 'rb');
 d = fread(fp);
+
+keyboard;
 
 if numel(d)>xres_dp*yres_dp*2 % We're processing an RGB image
     red = d(1:3:end);
@@ -29,19 +31,20 @@ if numel(d)>xres_dp*yres_dp*2 % We're processing an RGB image
 
     I = im_image/max(max(max(im_image)));    
 else % We're processing a depth image
-    depth = 256*d(2:2:end)+d(1:2:end);
-    r_depth = max(depth)-depth;
-    r_depth(depth==0) = 0;
+    r_depth = 256*d(2:2:end)+d(1:2:end);
+%     r_depth = max(depth)-depth;
+%     r_depth(depth==0) = 0;
     r_depth = reshape(r_depth, [xres_dp yres_dp])';
     
-    % Black out background
-    r_depth(r_depth<back_thresh) = 0;
-    % Bump the contrast of the figure
-    min_val = min(r_depth(r_depth>0));
-    max_val = max(max(r_depth));
-    diff = max_val-min_val;
-    r_depth(r_depth>0) = diff*(r_depth(r_depth>0)-min_val);
-    
+    if bumpContrast
+        % Black out background
+        r_depth(r_depth<back_thresh) = 0;
+        % Bump the contrast of the figure
+        min_val = min(r_depth(r_depth>0));
+        max_val = max(max(r_depth));
+        diff = max_val-min_val;
+        r_depth(r_depth>0) = diff*(r_depth(r_depth>0)-min_val);
+    end
     I = r_depth/max(max(r_depth));   
 end
 

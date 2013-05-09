@@ -1,5 +1,5 @@
 clear;
-corresp = importdata('fileCorresp.txt');
+corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
 %%
 close all;
 figure;
@@ -8,8 +8,6 @@ w = 100;
 h = 50;
 r_idx = 37:42;
 l_idx = 43:48;
-
-outDir = 'cropped_eyes';
 
 for i=1:numel(corresp)
     line = corresp{i};
@@ -39,6 +37,5 @@ for i=1:numel(corresp)
         plot(c(j, 1)-cxr, c(j, 2)-cyr, colors{j}); hold on;
     end
     
-    i
     
 end

@@ -57,8 +57,7 @@ for i=1:numel(corresp)
     H_right = findHomography(canon_corresp, corr_right);
     
     crop_left = transformEye(w, h, centroid_left, im, H_left);
-    crop_right = transformEye(w, h, centroid_left, im, H_left);
-    
+    crop_right = transformEye(w, h, centroid_right, im, H_right);
     imwrite(crop_left/255, [outPath imName '_left.png'], 'png');
     imwrite(crop_right/255, [outPath imName '_right.png'], 'png');
 end

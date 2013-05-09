@@ -1,5 +1,5 @@
 clear;
-corresp = importdata('fileCorresp.txt');
+corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
 %%
 w = 100;
 h = 50;
@@ -29,20 +29,22 @@ for i=1:numel(corresp)
     im = flipdim(imread(imPath), 2);
     outPath = strrep(imPath, 'png_data', outDir);
     
-    keyboard;
-    % TODO: do this right...
-    posLabel = imPath(42);
-    imName = outPath(43:end);
-    imName(end-3:end) = '';
-    outPath(42:end) = '';
-    %
-    
-    
+    imNameStartPos = regexp(outPath, 'IM_');
+    imName = outPath(imNameStartPos:imNameStartPos+5);
+    posLabel = imName(4);
+    outPath = outPath(1:imNameStartPos-2);    
     outPath = [outPath '/' posLabel '/'];
     
     if ~exist(outPath, 'dir')
         mkdir(outPath);
+    else
+        if exist([outPath imName '_left.png'], 'file') && ...
+           exist([outPath imName '_right.png'], 'file')
+            fprintf('Skipping %s.\n', [outPath imName '*.png']);
+            continue;
+        end
     end
+    fprintf('Processing %s. File %d out of %d.\n', [outPath imName '*.png'], i, numel(corresp));
 
     eye_r = crop_eye(im, corr(r_idx, :), w, h);
     eye_l = crop_eye(im, corr(l_idx, :), w, h);

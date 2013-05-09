@@ -1,5 +1,5 @@
-raw_dir = '~/Desktop/raw_data';
-out_dir = '~/Desktop/png_data';
+raw_dir = '~/Desktop/calibration';
+out_dir = '~/Desktop/calibration_png';
 dir_list = dir(raw_dir);
 dir_idx = [dir_list(:).isdir];
 dirs = {dir_list(dir_idx).name}';

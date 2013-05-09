@@ -3,7 +3,6 @@ clear;
 dataPath = '~/Desktop/cropped_eyes_transformed/';
 [X_left Y_left X_right Y_right, S] = ...
     load_cropped_eyes_intensity(dataPath);
-
 %% Set up cross validation
 K = 9;
 X = [X_left X_right];
@@ -58,4 +57,16 @@ for i=1:N_folds
         Y_test, k_cubic); 
 %     [test_error_gaussian(i) info] = kernelized_svm(X_train, Y_train, X_test, ...
 %         Y_test, k_gaussian); 
+end
+
+%% Investigate why some folds did poorly
+idx = find(test_fold_idx(:, 4)==1);
+for i=1:numel(idx)
+    close all;
+    figure;
+    left = reshape(X_left(idx(i), :), 50, 100);
+    right = reshape(X_right(idx(i), :), 50, 100);
+    subplot(1, 2, 1); imshow(right/255);
+    subplot(1, 2, 2); imshow(left/255);
+    keyboard;
 end

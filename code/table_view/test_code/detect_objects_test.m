@@ -90,8 +90,6 @@ P_rot = R*(R'*P);
 X_rot = P_rot(1, :)';
 Y_rot = P_rot(2, :)';
 Z_rot = P_rot(3, :)';
-close all; plot3(X_rot(1:100:end), Y_rot(1:100:end), Z_rot(1:100:end),'ok'); hold on;
-plot3(Xw(1:100:end), Yw(1:100:end), Zw(1:100:end),'or');
 
 %% Determine the actual hull cube location
 P = [(Xobj)'; (Yobj)'; (Zobj)'];
@@ -99,14 +97,29 @@ P_rot = R'*P;
 X_rot = P_rot(1, :)';
 Y_rot = P_rot(2, :)';
 Z_rot = P_rot(3, :)';
-close all; plot3(X_rot, Y_rot, Z_rot,'or'); hold on;
 
+hulls = zeros(3, 6);
 for i=1:3
-    X_i = Xobj(L==1);
-    Y_i = Xobj(L==1);
-    Z_i = Xobj(L==1);
-    
+    X_i = X_rot(L==i);
+    Y_i = Y_rot(L==i);
+    Z_i = Z_rot(L==i);
+    xmax = max(X_i); ymax = max(Y_i); zmax = max(Z_i)+0.02;
+    xmin = min(X_i); ymin = min(Y_i); zmin = min(Z_i);
+    hulls(i, :) = [xmin ymin zmin xmax ymax zmax];
 end
+
+B1 = make_box_3d(hulls(1, :));
+B2 = make_box_3d(hulls(2, :));
+B3 = make_box_3d(hulls(3, :));
+B1_trans = (R*B1')';
+B2_trans = (R*B2')';
+B3_trans = (R*B3')';
+close all; plot3(Xw(1:100:end), Yw(1:100:end), Zw(1:100:end), 'ok'); hold on;
+plot3(Xobj, Yobj, Zobj, 'or'); hold on;
+draw_box_3d(B1_trans, 'g');
+draw_box_3d(B2_trans, 'b');
+draw_box_3d(B3_trans, 'm');
+
 % P = [(Xw)'; (Yw)'; (Zw)'];
 % P_rot = R'*P;
 % X_rot = P_rot(1, :)';
@@ -159,7 +172,7 @@ R = [9.9993189761892909e-01, -3.2729355538435750e-03, 1.1202143414009318e-02;
      -1.1185178331413474e-02, 5.1565677729480267e-03, 9.9992414792047979e-01];
 T = [2.8788567238524864e-02; 6.3401893265889063e-04; 1.3891577580578355e-03];
 Pd = [Xobj_plot Yobj_plot Zobj_plot]';
-Pd_r = inv(R)*Pd;
+Pd_r = R'*Pd;
 P_rgb = bsxfun(@minus, Pd_r, T);
 Xobj_plot_rgb = P_rgb(1, :)';
 Yobj_plot_rgb = P_rgb(2, :)';
@@ -176,13 +189,32 @@ pi = K*P;
 pi = bsxfun(@rdivide, pi, pi(3, :));
 im = imread('images/rgb_5.png');
 close all; imshow(im); hold on;
-for i=1:size(pi, 2)
-        x = pi(1, i); y = pi(2, i);
-    if L_plot(i)==1
-        plot(x, y, 'rx');
-    elseif L_plot(i)==2
-        plot(x, y, 'wx');
-    else
-        plot(x, y, 'gx');
-    end
-end
+
+% Plot boxes
+B2D_1 = bsxfun(@minus, R'*(B1_trans'), T);
+B2D_1 = K*[B2D_1; ones(1, size(B2D_1, 2))];
+B2D_1 = bsxfun(@rdivide, B2D_1, B2D_1(3, :));
+B2D_1(3, :) = [];
+draw_box_2d(B2D_1', 'g');
+B2D_2 = bsxfun(@minus, R'*(B2_trans'), T);
+B2D_2 = K*[B2D_2; ones(1, size(B2D_2, 2))];
+B2D_2 = bsxfun(@rdivide, B2D_2, B2D_2(3, :));
+B2D_2(3, :) = [];
+draw_box_2d(B2D_2', 'm');
+B2D_3 = bsxfun(@minus, R'*(B3_trans'), T);
+B2D_3 = K*[B2D_3; ones(1, size(B2D_3, 2))];
+B2D_3 = bsxfun(@rdivide, B2D_3, B2D_3(3, :));
+B2D_3(3, :) = [];
+draw_box_2d(B2D_3', 'b');
+
+
+% for i=1:size(pi, 2)
+%     x = pi(1, i); y = pi(2, i);
+%     if L_plot(i)==1
+%         plot(x, y, 'rx');
+%     elseif L_plot(i)==2
+%         plot(x, y, 'wx');
+%     else
+%         plot(x, y, 'gx');
+%     end
+% end

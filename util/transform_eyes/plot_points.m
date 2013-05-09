@@ -1,5 +1,5 @@
 clear;
-corresp = importdata('fileCorresp.txt');
+corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
 %%
 w = 100;
 h = 50;
@@ -9,6 +9,9 @@ l_idx = 43:48;
 outDir = 'cropped_eyes_transformed';
 canon_corresp = gen_canon_corresp_points(w, h, 20, 10);
 close all; figure;
+
+P = zeros(numel(corresp), 12);
+pcount = 1;
 for i=1:numel(corresp)
     line = corresp{i};
     if line(1)=='!' || line(1)=='~'
@@ -32,7 +35,6 @@ for i=1:numel(corresp)
     centroid_right = calculate_eye_centroid(corr(r_idx, :));
     centroid_left = calculate_eye_centroid(corr(l_idx, :));    
     corr_left = bsxfun(@minus, corr(l_idx, :), centroid_left);
-    
     corr_right = bsxfun(@minus, corr(r_idx, :), centroid_right);
     
     % Calculate the homography
@@ -40,14 +42,26 @@ for i=1:numel(corresp)
     H_right = findHomography(canon_corresp, corr_right);
     
     cl = corr(l_idx, :);
+    cr = corr(r_idx, :);
     colors = {'bx', 'kx', 'gx', 'rx', 'mx', 'yx'};
-    for j=1:size(corr(r_idx, :))
+%     for j=1:size(corr(r_idx, :))
+%         p = cr(j, :)-centroid_right;
+%         p = inv(H_right)*[p 1]';
+%         p = floor(p./p(3));
+%         plot(p(1)+w/2, p(2)+h/2, colors{j}); hold on;
+%         P(pcount, (j-1)*2+1) = p(1)+w/2;
+%         P(pcount, (j-1)*2+2) = p(2)+h/2;
+%     end
+    for j=1:size(corr(l_idx, :))
         p = cl(j, :)-centroid_left;
         p = inv(H_left)*[p 1]';
         p = floor(p./p(3));
         plot(p(1)+w/2, p(2)+h/2, colors{j}); hold on;
+        P(pcount, (j-1)*2+1) = p(1)+w/2;
+        P(pcount, (j-1)*2+2) = p(2)+h/2;
     end
-    i
+    pcount = pcount+1;
+    
     
     % DEBUG
 %     if i>750
@@ -108,5 +122,25 @@ for i=1:numel(corresp)
 %         keyboard;
 %     end
     
+end
+axis([0 w 0 h]);
+%%
+close all;
+P_zeros = sum(P==0, 2);
+empty_idx = find(P_zeros==12);
+P_nonempty = P;
+P_nonempty(empty_idx, :) = [];
+
+P_mean = mean(P_nonempty);
+P_std = std(P_nonempty);
+
+figure;
+for i=1:6
+   x = P_mean(1, (i-1)*2+1);
+   y = P_mean(1, (i-1)*2+2);
+   x_std = P_std(1, (i-1)*2+1);
+   y_std = P_std(1, (i-1)*2+2);
+   plot(x, h-y, colors{i}, 'MarkerSize', 10, 'LineWidth', 3); hold on;
+   ellipse(x_std, y_std, 0, x, h-y, colors{i}); hold on;
 end
 axis([0 w 0 h]);
