@@ -5,13 +5,14 @@ close all
 % addpath(genpath('../../../../MATLAB'));
 
 %% Load checkerboard
-% calib_num = 15;
+calib_num = 1;
+ignore_cols = 8;
 rgb = double(imread(sprintf('calibration5_pairs/Image_%d.jpg', calib_num)));
 depth = double(imread(sprintf('calibration5_pairs/IR_%d.jpg', calib_num)));
 % simulate the conditions under which our images are recorded...1:8 columns
 % are 0 for some reason!
 depth_big = zeros(size(depth));
-depth_big(:,8:end) = depth(:,1:end-7);
+depth_big(:,ignore_cols:end) = depth(:,1:end-ignore_cols+1);
 depth = depth_big;
 % normalise the rgb channel
 rgb = rgb./255;
@@ -113,7 +114,7 @@ a(ind_ir_red) = rgb(ind_rgb_red);    a(ind_ir_green) = rgb(ind_rgb_green);    a(
 I = edge(depth_rep, 'canny', 0.3);
 % the zeros edge was added in to simulate our image taking conditions...we
 % don't need it to interfere with the alignment result depiction here
-I(:,1:8) = 0;
+I(:,1:ignore_cols) = 0;
 [xx yy] = ind2sub(size(I), find(I==1));
 ind = sub2ind(size(a), xx, yy, 2*ones(length(xx), 1));
 A = a;

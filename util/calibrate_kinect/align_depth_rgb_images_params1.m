@@ -5,7 +5,7 @@ addpath(genpath('../../../../ResearchTools/toolbox_calib/'));
 addpath(genpath('../../../../MATLAB'));
 
 %% Load image
-[rgb temp temp2 depth] = display_images(2, 2, 'images/1043.2.E');
+[rgb temp temp2 depth] = display_images(2, 2, 'images/1081.2.E');
 depth = fliplr(imrotate(depth, -180));
 
 %% Camera intrinsics
@@ -23,7 +23,8 @@ depth_yRes = 480;
 % cx_rgb = 633.08273-7.1;
 % cy_rgb = 514.29293-7.1;
 cx_d = 317.21643;
-cy_d =  229.44027-5.4;
+% cy_d =  229.44027-5.4;
+cy_d =  229.44027-2.4;
 fx_d =  598.31727;
 fy_d = 600.17755;
 fx_rgb = 1063.90253;
@@ -43,7 +44,7 @@ kc4_d = -0.00446;
 
 om = [ 0.00437   -0.00319  0.00051 ] - [ 0.00434   0.00487  0.00020 ]; R = rodrigues(om);
 % T = [ 0.03120   0.00012  -0.00158 ];
-T = [ 0.02120   0.00012  -0.00158 ];
+T = [ 0.02320   0.00012  -0.00158 ];
 % T = [ 0.02120   0.00012  -0.00158 ] + [ -0.00046   0.00035  -0.00282 ];
 % % om = [ -0.00466   -0.00089  0.00073 ]; R = rodrigues(om);
 % T = [ 0.02610   0.00015  -0.00452 ];
