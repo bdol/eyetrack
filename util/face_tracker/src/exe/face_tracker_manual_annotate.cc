@@ -54,12 +54,13 @@
 #define DISPLAY_WINDOW_NAME "Face Tracker"
 #define SIZE_EYE_POINTS_ARRAY (SHAPE_RIGHT_END-SHAPE_LEFT_BEGIN+1)
 
+
 /**
  * Helper function for getClick()
  */
 static void onMouse(int event, int x, int y, int, void *ptr)
 {
-  if(CV_EVENT_LBUTTONDBLCLK == event) {
+    if(CV_EVENT_LBUTTONDBLCLK == event) {
       // left double click
     *static_cast<cv::Point*>(ptr) = cv::Point(x, y);
   }
@@ -111,7 +112,6 @@ void EditPointsAroundEye(cv::Mat &image,cv::Mat &shape,cv::Mat &visi,cv::Point *
         cv::Point p1 = cv::Point(shape.at<double>(i,0),shape.at<double>(i+n,0));
         cv::circle(image,p1,2,colour_selected);
         cv::Point new_p1 = getClick(image);
-//        std::cout<<"You clicked: "<<new_p1<<std::endl;
         cv::circle(image,p1,2,colour);
         if(new_p1.x==-2)
             new_points[count] = p1;
@@ -326,9 +326,9 @@ int main(int argc, const char** argv)
   }
   int64 t1,t0 = cvGetTickCount(); int fnum=0;
   cvNamedWindow(DISPLAY_WINDOW_NAME,1);
-  std::cout << "Hot keys: "        << std::endl
-	    << "\t ESC - quit"     << std::endl
-	    << "\t d   - Redetect" << std::endl;
+  std::cout << "Instructions: "        << std::endl
+        << "\t left double click   - change yellow circle eye point to clicked point" << std::endl
+        << "\t right double click - leave yellow circle eye point unchanged" << std::endl;
 
   if(std::strcmp(inputListFile,"")!=0)
   {
@@ -341,7 +341,7 @@ int main(int argc, const char** argv)
           while(inputlist_stream.good())
           {
               getline(inputlist_stream,inputFile);
-//              std::cout<<inputFile<<std::endl;
+              std::cout<<inputFile<<std::endl;
               bool failed = true;
                 //grab image, resize and flip
                 frame = cv::imread(inputFile, CV_LOAD_IMAGE_COLOR);
@@ -354,7 +354,6 @@ int main(int argc, const char** argv)
 
                 cv::flip(im,im,1); 
                 cv::cvtColor(im,gray,CV_BGR2GRAY);
-                im_res = im;
                 //track this image
                 std::vector<int> wSize; if(failed)wSize = wSize2; else wSize = wSize1; 
                 cv::Point* new_points;
@@ -385,6 +384,10 @@ int main(int argc, const char** argv)
                         std::cout<<"Error opening output file for writing: "<<outputFile<<std::endl;
                 }
                 cv::destroyAllWindows();
+                frame.release();
+                im.release();
+                model.FrameReset();
+                cvNamedWindow(DISPLAY_WINDOW_NAME,1);
           }
       }
       else
