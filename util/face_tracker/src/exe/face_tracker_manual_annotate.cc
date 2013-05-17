@@ -60,11 +60,11 @@
  */
 static void onMouse(int event, int x, int y, int, void *ptr)
 {
-    if(CV_EVENT_LBUTTONDBLCLK == event) {
+    if(CV_EVENT_LBUTTONUP == event) {
       // left double click
     *static_cast<cv::Point*>(ptr) = cv::Point(x, y);
   }
-  else if(CV_EVENT_RBUTTONDBLCLK == event) {
+  else if(CV_EVENT_RBUTTONUP == event) {
       // right double click - no change required to point in case of right double click
     *static_cast<cv::Point*>(ptr) = cv::Point(-2,-2);
   }
@@ -91,8 +91,8 @@ cv::Point getClick(const cv::Mat &img)
 
 /**
  * yellow circle around a point indicates a currently editable point
- * LEFT DOUBLE CLICK TO CHANGE THE POINT
- * RIGHT DOUBLE CLICK TO LEAVE UNCHANGED
+ * LEFT CLICK TO CHANGE THE POINT
+ * RIGHT CLICK TO LEAVE UNCHANGED
  * @param image
  * @param shape
  * @param visi
@@ -327,8 +327,8 @@ int main(int argc, const char** argv)
   int64 t1,t0 = cvGetTickCount(); int fnum=0;
   cvNamedWindow(DISPLAY_WINDOW_NAME,1);
   std::cout << "Instructions: "        << std::endl
-        << "\t left double click   - change yellow circle eye point to clicked point" << std::endl
-        << "\t right double click - leave yellow circle eye point unchanged" << std::endl;
+        << "\t left click   - change yellow circle eye point to clicked point" << std::endl
+        << "\t right click - leave yellow circle eye point unchanged" << std::endl;
 
   if(std::strcmp(inputListFile,"")!=0)
   {
