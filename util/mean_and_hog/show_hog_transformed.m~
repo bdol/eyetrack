@@ -1,0 +1,35 @@
+%% 9 class HOG features
+clear;
+dataPath = '~/Desktop/cropped_eyes_transformed_new_pl/';
+[X_left Y_left X_right Y_right, S] = ...
+    load_cropped_eyes_intensity(dataPath);
+
+%% Get HOG
+left = reshape(X_left(1, :), 50, 100);
+cellSize = 4;
+numOrient = 9;
+% Get correct size for HOG data structure
+HOG = vl_hog(im2single(left), cellSize, 'NumOrientations', numOrient);
+hogLeft = zeros(size(HOG, 1), size(HOG, 2), size(HOG, 3), 9);
+hogRight = zeros(size(HOG, 1), size(HOG, 2), size(HOG, 3), 9);
+
+N = size(X_left, 1);
+tleft = CTimeleft(N);
+for i=1:N
+    tleft.timeleft();
+    left = reshape(X_left(i, :), 50, 100);
+    right = reshape(X_right(i, :), 50, 100);
+    hogLeft(:, :, :, Y_left(i, 1)) = ...
+        hogLeft(:, :, :, Y_left(i, 1)) + vl_hog(im2single(left), cellSize, 'NumOrientations', numOrient);
+    hogRight = hogLeft + vl_hog(im2single(right), cellSize, 'NumOrientations', numOrient);    
+end
+
+%% Show mean HOG for entire dataset
+hogLeftMean = hogLeft./N;
+hogRightMean = hogRight./N;
+
+close all;
+imLeft = vl_hog('render', hogLeftMean);
+imagesc(imLeft); colormap('gray');
+
+%% Classwise mean HOG
