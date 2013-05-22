@@ -1,0 +1,22 @@
+Brian Dolhansky, 2013.
+bdol@seas.upenn.edu
+
+These are the steps needed to get a raw data file into two cropped eye image
+files that are transformed to the canonical coordinates.
+
+1. In util/raw_processing, use the Matlab cell script "convert_raw_dir.m" to
+export the raw data in the given root dir to .png data. For instance, if the
+raw_data dir is in "~/Desktop/raw_data", set the "raw_dir" variable to
+'~/Desktop/raw_data'. Then run the script.
+
+2. Note: make sure you make a clean build of the specialized face tracker (in
+util/face_rectification) before starting this step. In util/crop_eyes,
+run the Python script gen_file_corresp.py with the following:
+
+./gen_file_corresp <path_to_png_image_root> <path_to_out_coordinate_directory>
+
+This will create a TSV file fileCorresp.txt that is of the following form:
+<path_to_png_file> <path_to_mesh_coordinates>
+
+Each mesh coordinate file contains the coordinates of a node on the face mesh
+which was fitted with FaceTracker.

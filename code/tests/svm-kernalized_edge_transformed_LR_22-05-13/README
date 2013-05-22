@@ -1,0 +1,10 @@
+This test runs an N-fold cross validation using kernalized SVM (with several
+different kernels including XXX, XXX, XXX). It uses the cropped eye set with
+canny edge features. In addition it IGNORES the first frame in every 3-frame
+sequence (see load_cropped_eyes_intensity.m for the implementation), as the
+participant was not always ready.
+
+NOTE: strfind might have changed between MATLAB versions (the argument order
+seems to be different). This test was authored using R2011b.
+
+Brian Dolhansky 19/04/13
