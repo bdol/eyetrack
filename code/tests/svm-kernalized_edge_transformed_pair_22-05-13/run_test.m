@@ -1,15 +1,15 @@
 %% Load data
 clear;
-dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_tps/';
+dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_new_pl/';
 [X_left Y_left X_right Y_right, S] = ...
-    load_cropped_eyes_intensity(dataPath);
+    load_cropped_eyes_edges(dataPath, 'canny');
 %% Set up cross validation
 K = 9;
 X = [X_left X_right];
 Y = Y_left(:, 1);
 S_ind = Y_left(:, 2);
-N_subjects = S(end).subj_index;
-N_withold = 20; % Number of subjects to withold per fold
+N_subjects = max([S.subj_index]);
+N_withold = 10; % Number of subjects to withold per fold
 N_folds = floor(N_subjects/N_withold);
 
 % Generate the subject numbers to withold for each fold
@@ -26,8 +26,9 @@ for i=1:N_folds
     end
 end
 
+% TODO: some images are missing, ignore this for now
 % Two eyes for every subject witheld, times K classes
-assert(all(sum(test_fold_idx)==N_withold*2*K));
+% assert(all(sum(test_fold_idx)==N_withold*2*K));
 
 %% Run SVM test all 9 classes
 addpath kernels/
