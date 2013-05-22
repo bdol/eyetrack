@@ -1,17 +1,18 @@
 %% Add paths
 close all
-addpath(genpath('../../MyNiViewer/Matlab'));
-addpath(genpath('../../../../ResearchTools/toolbox_calib/'));
-addpath(genpath('../../../../MATLAB'));
+% addpath(genpath('../../MyNiViewer/Matlab'));
+% addpath(genpath('../../../../ResearchTools/toolbox_calib/'));
+% addpath(genpath('../../../../MATLAB'));
 
 %% Load image
-[rgb temp temp2 depth] = display_images(2, 2, 'images/1081.2.E');
+[rgb temp temp2 depth] = display_images(2, 2, 'images/1043.2.E');
 depth = fliplr(imrotate(depth, -180));
+depth(:,1:8) = [];
 
 %% Camera intrinsics
 image_xRes = 1280;
 image_yRes = 1024;
-depth_xRes = 640;
+depth_xRes = 632;
 depth_yRes = 480;
 
 % cx_d = 317.21643+1.7;
@@ -24,7 +25,7 @@ depth_yRes = 480;
 % cy_rgb = 514.29293-7.1;
 cx_d = 317.21643;
 % cy_d =  229.44027-5.4;
-cy_d =  229.44027-2.4;
+cy_d =  229.44027-5.4;
 fx_d =  598.31727;
 fy_d = 600.17755;
 fx_rgb = 1063.90253;
@@ -48,11 +49,16 @@ T = [ 0.02320   0.00012  -0.00158 ];
 % T = [ 0.02120   0.00012  -0.00158 ] + [ -0.00046   0.00035  -0.00282 ];
 % % om = [ -0.00466   -0.00089  0.00073 ]; R = rodrigues(om);
 % T = [ 0.02610   0.00015  -0.00452 ];
+R = [ 9.9984628826577793e-01 1.2635359098409581e-03 -1.7487233004436643e-02
+    -1.4779096108364480e-03 9.9992385683542895e-01 -1.2251380107679535e-02
+    1.7470421412464927e-02 1.2275341476520762e-02 9.9977202419716948e-01 ];
+% T = [ 1.9985242312092553e-02, -7.4423738761617583e-04, -1.0916736334336222e-02 ];
+% T = [-0.0254 -0.00013 -0.00218];
 
 
 %% Convert depth values to meters
 depth_meters = 1./(depth(:)*-0.0030711016 + 3.3309495161);
-depth_meters(depth(:)==2047) = 0;
+% depth_meters(depth(:)==2047) = 0;
 depth_vals = (reshape(depth_meters, depth_yRes, depth_xRes));
 
 %% Transform rgb image to depth space

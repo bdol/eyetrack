@@ -1,0 +1,29 @@
+find ../../../all_images/ |grep -E '.*\/1\/IM_1_2_right.*' >sample.dat
+find ../../../all_images/ |grep -E '.*\/1\/IM_1_2_left.*' >>sample.dat
+find ../../../all_images/ |grep -E '.*\/1\/IM_1_3_left.*' >>sample.dat
+find ../../../all_images/ |grep -E '.*\/1\/IM_1_3_right.*' >>sample.dat
+sed 's/$/ 1 0 0 100 50/g' sample.dat>>positives.dat
+rm sample.dat
+/home/varsha/opencv-2.4.4/opencv_cmake_dir/bin/opencv_createsamples -info positives.dat -vec sample.vec -w 20 -h 10
+find ../../../all_images/ |grep -E '.*\/2\/IM_2_2_*' >negatives.dat
+find ../../../all_images/ |grep -E '.*\/2\/IM_2_3_*' >>negatives.dat
+find ../../../all_images/ |grep -E '.*\/3\/IM_3_2_*' >>negatives.dat
+find ../../../all_images/ |grep -E '.*\/3\/IM_3_3_*' >>negatives.dat
+find ../../../all_images/ |grep -E '.*\/4\/IM_4_2_*' >>negatives.dat
+find ../../../all_images/ |grep -E '.*\/4\/IM_4_3_*' >>negatives.dat
+/home/varsha/opencv-2.4.4/opencv_cmake_dir/bin/opencv_haartraining -data haarcascade -vec sample.vec -bg negatives.dat -nstages 20 -nsplits 2 -minhitrate 0.999 -maxfalsealarm 0.5 -npos `cat positives.dat|wc -l` -nneg `cat negatives.dat|wc -l` -w 20 -h 10 -nonsym -mem 512 -mode ALL
+
+
+
+MATLAB
+
+cp train_negatives/neg_1_2.dat negatives.dat
+cp train_positives/pos_1_2.dat positives.dat
+cp tests/test_info_1_2.dat test_info.dat
+/home/varsha/opencv-2.4.4/opencv_cmake_dir/bin/opencv_createsamples -info positives.dat -vec sample.vec -w 20 -h 10
+/home/varsha/opencv-2.4.4/opencv_cmake_dir/bin/opencv_haartraining -data haarcascade_1_2 -vec sample.vec -bg negatives.dat -nstages 10 -nsplits 2 -minhitrate 0.999 -maxfalsealarm 0.5 -npos `cat positives.dat|wc -l` -nneg `cat negatives.dat|wc -l` -w 20 -h 10 -nonsym -mem 512 -mode ALL
+
+mkdir haarcascade_1_1
+/home/varsha/opencv-2.4.4/opencv_cmake_dir/bin/opencv_traincascade -data haarcascade_1_1 -vec sample.vec -bg negatives.dat -numStages 10 -precalcValBufSize 512 -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numPos `cat positives.dat|wc -l` -numNeg `cat negatives.dat|wc -l` -w 20 -h 10 -mode ALL
+
+

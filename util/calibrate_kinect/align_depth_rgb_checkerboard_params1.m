@@ -11,16 +11,17 @@ rgb = double(imread(sprintf('calibration5_pairs/Image_%d.jpg', calib_num)));
 depth = double(imread(sprintf('calibration5_pairs/IR_%d.jpg', calib_num)));
 % simulate the conditions under which our images are recorded...1:8 columns
 % are 0 for some reason!
-depth_big = zeros(size(depth));
-depth_big(:,ignore_cols:end) = depth(:,1:end-ignore_cols+1);
-depth = depth_big;
+% depth_big = zeros(size(depth));
+% depth_big(:,ignore_cols:end) = depth(:,1:end-ignore_cols+1);
+% depth = depth_big;
+% depth(:,1:8) = [];
 % normalise the rgb channel
 rgb = rgb./255;
 
 %% Camera intrinsics
 image_xRes = 1280;
 image_yRes = 1024;
-depth_xRes = 640;
+depth_xRes = 632;
 depth_yRes = 480;
 
 cx_d = 317.21643;
@@ -46,7 +47,10 @@ kc4_d = -0.00446;
 om = [ 0.00437   -0.00319  0.00051 ] - [ 0.00434   0.00487  0.00020 ]; R = rodrigues(om);
 % T = [ 0.01020   0.00012  -0.00158 ];
 T = [ 0.02120   0.00012  -0.00158 ];
-
+T = [ 0.02320   -0.0212  -0.00158 ];
+R = [ 9.9984628826577793e-01 1.2635359098409581e-03 -1.7487233004436643e-02
+    -1.4779096108364480e-03 9.9992385683542895e-01 -1.2251380107679535e-02
+    1.7470421412464927e-02 1.2275341476520762e-02 9.9977202419716948e-01 ];
 %% There are no depth values here since we are dealing with an IR image
 depth_vals = ones(depth_yRes, depth_xRes);
 

@@ -27,34 +27,39 @@ xval = struct('train_indices', {}, 'test_indices', {});
 if(~subjectwise_split)
     boxes = round(linspace(1,N,N_folds+1));
     arr = [1:N_folds];
+    mixed_up_N = randperm(N);
     for fold = 1:N_folds-1
         a = ones(N,1);
-        a(boxes(arr==fold):boxes(arr==fold +1)-1) = 0;
+        a(mixed_up_N(boxes(arr==fold):boxes(arr==fold +1)-1)) = 0;
         xval(fold).train_indices = find(a);
         xval(fold).test_indices = find(~a);
     end
     fold = fold + 1;
     a = ones(N,1);
-    a(boxes(arr==fold):end) = 0;
+    a(mixed_up_N(boxes(arr==fold):end)) = 0;
     xval(fold).train_indices = find(a);
     xval(fold).test_indices = find(~a);
 else
-    M = N./num_per_subj;
+    M = floor(N./num_per_subj);
+    new_N = M*num_per_subj;     % in case we dont have num_per_subj images for each subject
     boxes = round(linspace(1,M,N_folds+1));
     arr = [1:N_folds];
+    mixed_up_M = randperm(M);
     for fold = 1:N_folds-1
         a = ones(M,1);
-        a(boxes(arr==fold):boxes(arr==fold +1)-1) = 0;
+        a(mixed_up_M(boxes(arr==fold):boxes(arr==fold +1)-1)) = 0;
         a = repmat(a,1,num_per_subj);
-        b = reshape(a',N,1);
+        b = reshape(a',new_N,1);
         xval(fold).train_indices = find(b);
         xval(fold).test_indices = find(~b);
     end
     fold = fold + 1;
     a = ones(M,1);
-    a(boxes(arr==fold):end) = 0;
+    a(mixed_up_M(boxes(arr==fold):end)) = 0;
     a = repmat(a,1,num_per_subj);
-    b = reshape(a',N,1);
+    b = reshape(a',new_N,1);
     xval(fold).train_indices = find(b);
+    % add any remaining elements to the last fold. They will be <N_folds in number
+    xval(fold).train_indices = [xval(fold).train_indices; new_N+1:N];
     xval(fold).test_indices = find(~b);
 end
