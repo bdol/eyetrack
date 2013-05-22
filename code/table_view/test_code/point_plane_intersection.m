@@ -8,5 +8,6 @@ w = bsxfun(@minus, x, X0);
 d = w*v'; % This assumes we have a unit normal vector
 v = repmat(v, N, 1);
 p = w-bsxfun(@times, d, v);
+p = bsxfun(@plus, X0, p);
 
 end

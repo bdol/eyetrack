@@ -2,8 +2,8 @@
 % file format, this function takes a single dir of images and converts
 % them.
 clear;
-raw_dir = '~/Desktop/calibration3';
-out_dir = '~/Desktop/calibration3_png';
+raw_dir = '~/Desktop/k1';
+out_dir = '~/Desktop/k1png';
 d = dir(raw_dir);
 % dir_idx = [dir_list(:).isdir];
 im_list = {d.name}';
@@ -18,7 +18,7 @@ for d = 1:numel(im_list)
     im_out_name = [out_dir '/' im_list{d}];
     fprintf('Processing images in %s ...\n', im_out_name);
     
-    I = convert_image(im_name, 0);    
+    I = flipdim(convert_image(im_name, 0), 2);    
     
     imwrite(I, [im_out_name(1:end-3) 'png'], 'png');
 end

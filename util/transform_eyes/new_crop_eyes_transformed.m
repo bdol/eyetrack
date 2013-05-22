@@ -8,7 +8,7 @@ while ischar(line)
     C = regexp(line, ' ', 'split');
     fname = C{1};
     fname = strrep(fname, '/fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/jpg_data/', ...
-                    '/Users/bdol/Desktop/png_data/');
+                    '/Users/bdol/code/eyetrack_data/png_data/');
     fname = strrep(fname, 'jpg', 'png');
         
     
@@ -29,7 +29,7 @@ fclose(fid);
 w = 100;
 h = 50;
 
-outDir = '/Users/bdol/Desktop/cropped_eyes_transformed_new/';
+outDir = '/Users/bdol/code/eyetrack_data/cropped_eyes_projective_new/';
 canon_corresp = gen_canon_corresp_points(w, h, 20, 10);
 for i=1:numel(data)
     fname = data{i}.fname;
@@ -55,15 +55,15 @@ for i=1:numel(data)
     corr_right = bsxfun(@minus, corr_right, centroid_right);
     
     % Calculate the homography
-%     H_left = findHomography(canon_corresp, corr_left);
-%     H_right = findHomography(canon_corresp, corr_right);
+    H_left = findHomography(canon_corresp, corr_left);
+    H_right = findHomography(canon_corresp, corr_right);
     tleft = cp2tform(corr_left, canon_corresp, 'piecewise linear');
     tright = cp2tform(corr_right, canon_corresp, 'piecewise linear');
 
-%     crop_left = transformEye(w, h, centroid_left, im, H_left);
-%     crop_right = transformEye(w, h, centroid_right, im, H_right);
-    crop_left = transformEyeIPT(w, h, centroid_left, im, tleft);
-    crop_right = transformEyeIPT(w, h, centroid_right, im, tright);
+    crop_left = transformEye(w, h, centroid_left, im, H_left);
+    crop_right = transformEye(w, h, centroid_right, im, H_right);
+%     crop_left = transformEyeIPT(w, h, centroid_left, im, tleft);
+%     crop_right = transformEyeIPT(w, h, centroid_right, im, tright);
     left_fname = strcat(outPath, classNum, '/', image_num{1}, '_left.png');
     right_fname = strcat(outPath, classNum, '/', image_num{1}, '_right.png');
     imwrite(crop_left/255, left_fname{1}, 'png');

@@ -2,8 +2,8 @@
 
 import os, subprocess, sys
 
-if len(sys.argv)<2:
-    print "Usage: ./gen_file_corresp <path_to_image_root>"
+if len(sys.argv)<3:
+    print "Usage: ./gen_file_corresp <path_to_image_root> <corr_data_dir>"
     sys.exit(1)
 
 root = sys.argv[1]
@@ -53,7 +53,7 @@ os.chdir(binPath)
 expNum = 0
 while 1:
     expNameBase = os.path.basename(os.path.normpath(subjNumPaths[expNum]))
-    outPath =  "/Users/bdol/Desktop/corr_data/"+expNameBase
+    outPath =  os.path.normpath(sys.argv[2])+"/"+expNameBase
     corrStrings = []
     skipFaceTracker = False
     

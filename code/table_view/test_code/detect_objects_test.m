@@ -1,3 +1,4 @@
+
 clear;
 D = imread('images/depth_0.png');
 D_m = raw_depth_to_meters2(D);
@@ -14,6 +15,7 @@ fy = 5.5885814292051782e+02;
 cx = 3.0015891816197120e+02;
 cy = 2.5149932242225375e+02;
 [Xw Yw Zw] = im_to_world(X, Y, Z, fx, fy, cx, cy);
+
 % Remove bad depth points
 Xw(Z==0) = [];
 Yw(Z==0) = [];
@@ -25,13 +27,15 @@ Zw(Zw>1) = [];
 
 % Least squares to fit table cloud points
 [n_est ro_est Xp Yp Zp] = LSE([Xw Yw Zw]);
+% n_est = svd_find_plane([Xw Yw Zw]);
+% norm(abs(n-n_est))
 hp = size(Xp, 1); wp = size(Xp, 2);
 
 % Show the fitted plane for debugging purposes
 close all;
 plot3(Xw(1:100:end), Yw(1:100:end), Zw(1:100:end),'ok'); hold on;
 mesh(Xp,Yp,Zp);colormap([.8 .8 .8])
-% axis('off');
+axis('off');
 
 %% Now detect objects by finding points that are deviate from this plane
 D = imread('images/depth_3.png');
@@ -63,6 +67,7 @@ obj_idx = D>thresh;
 Xobj = Xw(obj_idx);
 Yobj = Yw(obj_idx);
 Zobj = Zw(obj_idx);
+
 Xw(obj_idx) = [];
 Yw(obj_idx) = [];
 Zw(obj_idx) = [];
@@ -139,8 +144,32 @@ K = [fx 0 cx 0; 0 fy cy 0; 0 0 1 0];
 P = [Xobj_plot Yobj_plot Zobj_plot ones(numel(Xobj_plot), 1)]';
 pi = K*P;
 pi = bsxfun(@rdivide, pi, pi(3, :));
-im = imread('images/depth_5.png');
+im = imread('images/depth_3.png');
 close all; imagesc(im); hold on;
+for i=1:size(pi, 2)
+    x = pi(1, i); y = pi(2, i);
+    if L_plot(i)==1
+        plot(x, y, 'rx');
+    elseif L_plot(i)==2
+        plot(x, y, 'wx');
+    else
+        plot(x, y, 'gx');
+    end
+end
+
+%% Plot the points on the RGB image
+R = [ 9.9993189761892909e-01, -3.2729355538435750e-03, 1.1202143414009318e-02; 
+    3.3304519065922894e-03, 9.9998134867689581e-01, -5.1196082305675792e-03;
+    -1.1185178331413474e-02, 5.1565677729480267e-03, 9.9992414792047979e-01 ];
+T = [ 2.8788567238524864e-02; 6.3401893265889063e-04;
+       1.3891577580578355e-03 ];
+K_rgb = [ 4.9726263121508453e+02, 0., 3.1785221776747596e+02; 0., ...
+       4.9691535190126677e+02, 2.7311575302513319e+02; 0., 0., 1. ];
+im = imread('images/rgb_3.png');
+close all; imshow(im); hold on;
+pi = R'*P(1:3, :);
+pi = K_rgb*bsxfun(@minus, pi, T);
+pi = bsxfun(@rdivide, pi, pi(3, :));
 for i=1:size(pi, 2)
     x = pi(1, i); y = pi(2, i);
     if L_plot(i)==1
