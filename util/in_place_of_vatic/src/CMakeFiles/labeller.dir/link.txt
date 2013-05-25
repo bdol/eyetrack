@@ -1,2 +1,0 @@
-/usr/bin/ar cr liblabeller.a  CMakeFiles/labeller.dir/label_interest_points.cpp.o
-/usr/bin/ranlib liblabeller.a

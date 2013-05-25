@@ -1,2 +1,0 @@
-/home/varsha/in_place_of_vatic/src/CMakeFiles/label_interest_points.dir
-/home/varsha/in_place_of_vatic/src/CMakeFiles/labeller.dir
