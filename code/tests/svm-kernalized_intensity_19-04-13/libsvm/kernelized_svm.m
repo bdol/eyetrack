@@ -29,17 +29,19 @@ Ktest = kernel(X, Xtest);
 % parameter.
 crange = 10.^[-10:2:4];
 for i = 1:numel(crange)
-    acc(i) = svmtrain(Y, [(1:size(K,1))' K], sprintf('-t 4 -v 10 -c %g', crange(i)));
+    acc(i) = svmtrain(Y, [(1:size(K,1))' K], sprintf('-t 4 -v 10 -c %g -q 1', crange(i)));
 end
 [~, bestc] = max(acc);
+train_err = 1-max(acc)/100;
 fprintf('Cross-val chose best C = %g\n', crange(bestc));
 
 % Train and evaluate SVM classifier using libsvm
-model = svmtrain(Y, [(1:size(K,1))' K], sprintf('-t 4 -c %g', crange(bestc)));
+model = svmtrain(Y, [(1:size(K,1))' K], sprintf('-t 4 -c %g -q 1', crange(bestc)));
 [yhat acc vals] = svmpredict(Ytest, [(1:size(Ktest,1))' Ktest], model);
 test_err = mean(yhat~=Ytest);
 
 % Optionally we can look at more information from training/testing.
 info.vals = vals;
 info.yhat = yhat;
+info.train_err = train_err;
 info.model = model;

@@ -4,8 +4,18 @@ dataPath = '~/code/eyetrack_data/cropped_eyes_clean/';
 [X_left Y_left X_right Y_right, S] = ...
     load_cropped_eyes_intensity_clean(dataPath);
 
+ignore_idx = bsxfun(@or, bsxfun(@or, Y_left(:, 1)==6, Y_left(:, 1)==7), bsxfun(@or, Y_left(:, 1)==8, Y_left(:, 1)==9));
+X_left(ignore_idx, :) = [];
+X_right(ignore_idx, :) = [];
+Y_left(ignore_idx, :) = [];
+Y_right(ignore_idx, :) = [];
+S(ignore_idx) = [];
+
+X_left = bsxfun(@rdivide, X_left, max(X_left, [], 2));
+X_right = bsxfun(@rdivide, X_right, max(X_right, [], 2));
+
 %% Set up cross validation
-K = 9;
+K = 5;
 X = [X_left X_right];
 Y = Y_left(:, 1);
 S_ind = Y_left(:, 2);
@@ -47,7 +57,6 @@ addpath libsvm/
 k_linear = @(x, x2)kernel_poly(x, x2, 1);
 k_quadratic = @(x, x2)kernel_poly(x, x2, 2);
 k_cubic = @(x, x2)kernel_poly(x, x2, 3);
-k_gaussian = @(x, x2)kernel_gaussian(x, x2, 100000);
 
 train_error_linear = zeros(N_folds, 1);
 train_error_quadratic = zeros(N_folds, 1);
