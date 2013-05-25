@@ -60,6 +60,6 @@ else
     b = reshape(a',new_N,1);
     xval(fold).train_indices = find(b);
     % add any remaining elements to the last fold. They will be <N_folds in number
-    xval(fold).train_indices = [xval(fold).train_indices; new_N+1:N];
+    xval(fold).train_indices = [xval(fold).train_indices; [new_N+1:N]'];
     xval(fold).test_indices = find(~b);
 end
