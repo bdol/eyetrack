@@ -1,5 +1,5 @@
-raw_dir = '~/Desktop/calibration';
-out_dir = '~/Desktop/calibration_png';
+raw_dir = '~/code/eyetrack_data/raw_data';
+out_dir = '~/code/eyetrack_data/png_data';
 dir_list = dir(raw_dir);
 dir_idx = [dir_list(:).isdir];
 dirs = {dir_list(dir_idx).name}';
@@ -20,7 +20,7 @@ for d = 1:numel(dirs)
         fprintf('Processing images in %s ...\n', im_dir);
         for i=1:numel(images)
 
-            I = convert_image([im_dir '/' images(i).name]);
+            I = convert_image([im_dir '/' images(i).name], 1);
             [~, im_name] = fileparts(images(i).name);
 
             imwrite(I, [num_out_dir '/' im_name '.png'], 'png');

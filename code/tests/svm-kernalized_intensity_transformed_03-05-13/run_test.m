@@ -1,6 +1,6 @@
 %% Load data
 clear;
-dataPath = '~/Desktop/cropped_eyes_transformed/';
+dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_tps/';
 [X_left Y_left X_right Y_right, S] = ...
     load_cropped_eyes_intensity(dataPath);
 %% Set up cross validation
@@ -9,7 +9,7 @@ X = [X_left X_right];
 Y = Y_left(:, 1);
 S_ind = Y_left(:, 2);
 N_subjects = S(end).subj_index;
-N_withold = 10; % Number of subjects to withold per fold
+N_withold = 20; % Number of subjects to withold per fold
 N_folds = floor(N_subjects/N_withold);
 
 % Generate the subject numbers to withold for each fold

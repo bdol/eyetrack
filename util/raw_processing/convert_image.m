@@ -9,8 +9,6 @@ back_thresh = 850;
 fp=fopen(fName, 'rb');
 d = fread(fp);
 
-keyboard;
-
 if numel(d)>xres_dp*yres_dp*2 % We're processing an RGB image
     red = d(1:3:end);
     green = d(2:3:end);
@@ -31,12 +29,12 @@ if numel(d)>xres_dp*yres_dp*2 % We're processing an RGB image
 
     I = im_image/max(max(max(im_image)));    
 else % We're processing a depth image
-    r_depth = 256*d(2:2:end)+d(1:2:end);
-%     r_depth = max(depth)-depth;
-%     r_depth(depth==0) = 0;
+    depth = 256*d(2:2:end)+d(1:2:end);
+    r_depth = max(depth)-depth;
+    r_depth(depth==0) = 0;
     r_depth = reshape(r_depth, [xres_dp yres_dp])';
     
-    if bumpContrast
+    if bumpContrast == 1
         % Black out background
         r_depth(r_depth<back_thresh) = 0;
         % Bump the contrast of the figure
