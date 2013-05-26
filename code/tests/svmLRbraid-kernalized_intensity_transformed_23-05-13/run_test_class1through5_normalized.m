@@ -1,10 +1,22 @@
 %% Load data
 clear;
-dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_tps_new/';
+dataPath = '~/code/eyetrack_data/cropped_eyes_clean/';
 [X_left Y_left X_right Y_right, S] = ...
-    load_cropped_eyes_iris(dataPath);
+    load_cropped_eyes_intensity_clean(dataPath);
+
+ignore_idx = bsxfun(@or, bsxfun(@or, Y_left(:, 1)==6, Y_left(:, 1)==7), bsxfun(@or, Y_left(:, 1)==8, Y_left(:, 1)==9));
+X_left(ignore_idx, :) = [];
+X_right(ignore_idx, :) = [];
+Y_left(ignore_idx, :) = [];
+Y_right(ignore_idx, :) = [];
+S(ignore_idx) = [];
+
+
+X_left = bsxfun(@rdivide, X_left, max(X_left, [], 2));
+X_right = bsxfun(@rdivide, X_right, max(X_right, [], 2));
+
 %% Set up cross validation
-K = 9;
+K = 5;
 X = [X_left X_right];
 Y = Y_left(:, 1);
 S_ind = Y_left(:, 2);
@@ -15,8 +27,21 @@ N_folds = floor(N_subjects/N_withold);
 % Generate the subject numbers to withold for each fold
 subjs = unique(Y_left(:, 2));
 subjs = subjs(randperm(length(subjs)));
-% Note: some subjects may not be tested with this method
+
+% Make sure we pick up the subjects that don't fit neatly into the folds
+extra_subjs = [];
+if numel(subjs)>(N_withold*N_folds)
+    extra_subjs = subjs(N_withold*N_folds+1:end);
+end
+
 subjs = reshape(subjs(1:N_withold*N_folds), N_withold, N_folds);
+if ~isempty(extra_subjs)
+    N_folds = N_folds+1;
+    subjs = [subjs zeros(size(subjs, 1), 1)];
+    subjs(1:numel(extra_subjs), end) = extra_subjs;
+end
+
+assert(numel(unique(subjs))-1==N_subjects);
 
 % Generate the index of the samples to withold in each fold
 test_fold_idx = zeros(size(X, 1), N_folds);
@@ -26,10 +51,7 @@ for i=1:N_folds
     end
 end
 
-% Two eyes for every subject witheld, times K classes
-assert(all(sum(test_fold_idx)==N_withold*2*K));
-
-%% Run SVM test all 9 classes
+%% Run SVM test
 addpath kernels/
 addpath libsvm/
 addpath(genpath('liblinear-1.92'));
@@ -53,34 +75,14 @@ for i=1:N_folds
     Y_train = Y(~test_idx);
     X_test = X(test_idx, :);
     Y_test = Y(test_idx);
-    Y_train_subjs = Y_left(~test_idx, 2);
-    Y_test_subjs = Y_left(test_idx, 2);
     
     % First divide the training fold into N_svm partitions. We will do xval on
-    % these with an SVM to obtain their predictions. Make sure to not
-    % include the same subjects in training and testing.
+    % these with an SVM to obtain their predictions.
     N_svm = 3;
     train_pred = zeros(size(X_train, 1), K);
     svm_idx = ceil(rand(size(X_train, 1), 1)*N_svm);
-    N_per_fold_svm = ceil(numel(unique(Y_train_subjs))/N_svm);
-    unique_train_subjs = unique(Y_train_subjs);
-    svm_subjs = unique_train_subjs(randperm(length(unique_train_subjs)));
-    svm_subjs_mat = zeros(N_per_fold_svm, N_svm);
-    for k=1:numel(svm_subjs)
-        svm_subjs_mat(k) = svm_subjs(k);
-    end
-    
     for j=1:N_svm
-        test_idx = zeros(size(Y_train_subjs, 1), 1);
-        for k=1:size(Y_train_subjs, 1)
-            for p=1:N_per_fold_svm
-                if test_idx(k)==0
-                    test_idx(k) = Y_train_subjs(k) == svm_subjs_mat(p, j);
-                end
-            end
-        end
-        test_idx = logical(test_idx);
-       
+        test_idx = svm_idx==j;
         X_train_svm = X_train(~test_idx, :);
         Y_train_svm = Y_train(~test_idx);
         X_test_svm = X_train(test_idx, :);
@@ -91,6 +93,7 @@ for i=1:N_folds
         
         train_pred(test_idx, :) = info.vals;
     end
+    keyboard;
     
     % Now that we have all the training predictions (on unseen data), train
     % the LR model
@@ -108,15 +111,3 @@ for i=1:N_folds
     test_acc_cubic_braid(i) = acc(1)/100;
 end
 beep
-
-%% Investigate why some folds did poorly
-idx = find(test_fold_idx(:, 4)==1);
-for i=1:numel(idx)
-    close all;
-    figure;
-    left = reshape(X_left(idx(i), :), 50, 100);
-    right = reshape(X_right(idx(i), :), 50, 100);
-    subplot(1, 2, 1); imshow(right/255);
-    subplot(1, 2, 2); imshow(left/255);
-    keyboard;
-end
