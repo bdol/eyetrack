@@ -1,5 +1,5 @@
 clear;
-root = '~/Desktop/cropped_eyes_transformed/';
+root = '~/Desktop/cropped_eyes_transformed_new/';
 D = rdir([root '**/*.png']);
 %% Mean over the whole set
 im = imread(D(1).name);
@@ -36,7 +36,7 @@ subplot(2, 2, 4); imshow(rgb2gray(mean_left));
 
 %% 9 class mean images
 clear;
-dataPath = '~/Desktop/cropped_eyes_transformed/';
+dataPath = '~/Desktop/cropped_eyes_transformed_new/';
 [X_left Y_left X_right Y_right, S] = ...
     load_cropped_eyes_intensity(dataPath);
 %%

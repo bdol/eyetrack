@@ -1,8 +1,8 @@
 %% Load data
 clear;
-dataPath = '~/code/eyetrack_data/cropped_eyes_clean/';
+dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_tps_corrected/';
 [X_left Y_left X_right Y_right, S] = ...
-    load_cropped_eyes_intensity_clean(dataPath);
+    load_cropped_eyes_intensity(dataPath);
 
 ignore_idx = bsxfun(@or, bsxfun(@or, Y_left(:, 1)==6, Y_left(:, 1)==7), bsxfun(@or, Y_left(:, 1)==8, Y_left(:, 1)==9));
 X_left(ignore_idx, :) = [];
