@@ -11,37 +11,13 @@ S_ind = Y_left(:, 2);
 fprintf('Done!\n');
 
 %%
-% Axis A goes from top left to bottom right, and includes the numbers 1, 6,
-% 5, 8, 3
-axisAidx = Y(:, 1)==1 | ...
-           Y(:, 1)==6 | ...
-           Y(:, 1)==5 | ...
-           Y(:, 1)==8 | ...
-           Y(:, 1)==3;
-
-% Axis B goes from top right to bottom left, and includes the numbers 2, 7,
-% 5, 9, 4
-axisBidx = Y(:, 1)==2 | ...
-           Y(:, 1)==7 | ...
-           Y(:, 1)==5 | ...
-           Y(:, 1)==9 | ...
-           Y(:, 1)==4;
-
 X = [X_left X_right];
+Y2Dpos = get_2D_data_positions(Y);
+Ypos_A = class_to_pos(Y, 'A');
+Ypos_B = class_to_pos(Y, 'B');
 
-X_A = X(axisAidx, :);
-Y_A = Y(axisAidx);
-
-S_ind_A = S_ind(axisAidx);
-
-X_B = X(axisBidx, :);
-Y_B = Y(axisBidx);
-S_ind_B = S_ind(axisBidx);
-
-Y_P = class_to_pos_A(Y);
-
-%% Set up cross validation for A axis
-K_A = numel(unique(Y_A));
+%% Set up cross validation
+K = numel(unique(Y));
 
 N_subjects = max([S.subj_index]);
 N_withold = 20; % Number of subjects to withold per fold
@@ -74,48 +50,108 @@ for i=1:N_folds
     end
 end
 
-%% Run multiple linear regression on A axis
+%% Run multiple linear regression on both axes
+% Error of using both models
 train_error = zeros(N_folds, 1);
 test_error = zeros(N_folds, 1);
+% Error of each model
+train_error_A = zeros(N_folds, 1);
+test_error_A = zeros(N_folds, 1);
+train_error_B = zeros(N_folds, 1);
+test_error_B = zeros(N_folds, 1);
+
 pos_hat = [];
 Y_actual = [];
-B_coeff = {};
+B_coeff_A = {};
+
+% Error from averaging subject image positions
+avg_train_error = zeros(N_folds, 1);
+avg_test_error = zeros(N_folds, 1);
 
 for i=1:N_folds
     test_idx = logical(test_fold_idx(:, i));
     
-    X_train = X((~test_idx & axisAidx), :);
+    X_train = X(~test_idx, :);
     [coeff, ~, latent] = princomp(X_train, 'econ');
     % Get alpha% of the energy
     a = 0.9;
     latent_c = cumsum(latent)/sum(latent);
-    num_comp = max(find(latent_c<a));
+    num_comp = find(latent_c<a, 1, 'last');
     pc = coeff(:, 1:num_comp);
     X_train_red = X_train*pc;
-    Y_train = Y_P((~test_idx & axisAidx));
     
-    X_test = X((test_idx & axisAidx), :);
+    X_test = X(test_idx, :);
     X_test_red = X_test*pc;
-    Y_test = Y_P((test_idx & axisAidx));
+    % A axis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Y_train_A = Ypos_A(~test_idx);
+    Y_test_A = Ypos_A(test_idx);
     
     % Make sure we don't have any invalid distances
     assert(isempty(find(Y_train==-1, 1)));
     assert(isempty(find(Y_test==-1, 1)));
     
-    B = regress(Y_train, X_train_red);
-    B_coeff{i} = B;
+    B_A = regress(Y_train_A, X_train_red);
+    B_coeff_A{i} = B_A;
     
-    Yhat_train = X_train_red*B;
-    train_error(i) = sum(sqrt((Yhat_train-Y_train).^2))/size(X_train, 1);
+    Yhat_train_A = X_train_red*B_A;
+    Yhat_test_A = X_test_red*B_A;
     
-    Yhat_test = X_test_red*B;
-    test_error(i) = sum(sqrt((Yhat_test-Y_test).^2))/size(X_test, 1);
+    train_error_A(i) = sum(sqrt((Yhat_train_A-Y_train_A).^2))/size(X_train, 1);
+    test_error_A(i) = sum(sqrt((Yhat_test_A-Y_test_A).^2))/size(X_test, 1);
+    % A axis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % B axis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Y_train_B = Ypos_B(~test_idx);
+    Y_test_B = Ypos_B(test_idx);
+    
+    % Make sure we don't have any invalid distances
+    assert(isempty(find(Y_train==-1, 1)));
+    assert(isempty(find(Y_test==-1, 1)));
+    
+    B_B = regress(Y_train_B, X_train_red);
+    B_coeff_B{i} = B_B;
+    
+    Yhat_train_B = X_train_red*B_B;
+    Yhat_test_B = X_test_red*B_B;
+    
+    train_error_B(i) = sum(sqrt((Yhat_train_B-Y_train_B).^2))/size(X_train, 1);
+    test_error_B(i) = sum(sqrt((Yhat_test_B-Y_test_B).^2))/size(X_test, 1);
+    % B axis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    P_train = pred_to_pos(Yhat_train_A, Yhat_train_B, Y_train_A, Y2Dpos(~test_idx, :));
+    P_test = pred_to_pos(Yhat_test_A, Yhat_test_B);
+    
+    Y2Dpos_train = Y2Dpos(~test_idx, :);
+    Y2Dpos_test = Y2Dpos(test_idx, :);
+    
+%     train_error(i) = sum(sqrt(sum((P_train-Y2Dpos_train).^2, 2)))/size(X_train, 1);
+%     test_error(i) = sum(sqrt(sum(P_test-Y2Dpos_test).^2, 2))/size(X_test, 1);
     
     fprintf('Fold %d.\n\tTrain error (RMSE in.): %f\n\tTest error (RMSE in.): %f\n\n', ...
                 i, train_error(i), test_error(i));
             
-    pos_hat = [pos_hat; Yhat_test];
-    Y_actual = [Y_actual; Y(test_idx & axisAidx)];
+
+    % Try subject averaging
+    train_subjs = unique(S_ind(~test_idx));
+    test_subjs = unique(S_ind(test_idx));
+    P_train_avg = zeros(size(P_train));
+    P_test_avg = zeros(size(P_test));
+    for j=1:numel(train_subjs)
+        for k=1:K
+            subj_idx = (S_ind(~test_idx)==train_subjs(j)) & Y(~test_idx)==k;
+            P_subj = P_train(subj_idx, :);
+            P_train_avg(subj_idx, :) = repmat(mean(P_subj), size(P_subj, 1), 1);
+        end
+    end
+    keyboard;
+    for j=1:numel(test_subjs)
+        for k=1:K
+            subj_idx = (S_ind(test_idx)==train_subjs(j)) & Y(test_idx)==k;
+            P_subj = P_test(subj_idx, :);
+            P_test_avg(subj_idx, :) = repmat(mean(P_subj), size(P_subj, 1), 1);
+        end
+    end
+    
+    keyboard;
 end
 
 %%
