@@ -1,8 +1,10 @@
 %% Load data
 clear;
 dataPath = '~/code/eyetrack_data/cropped_eyes_transformed_tps_corrected/';
+% [X_left Y_left X_right Y_right, S] = ...
+%     load_cropped_eyes_intensity(dataPath);
 [X_left Y_left X_right Y_right, S] = ...
-    load_cropped_eyes_intensity(dataPath);
+    load_cropped_eyes_SURF(dataPath, 1);
 
 %% Set up cross validation
 K = 9;
@@ -92,5 +94,4 @@ for i=1:N_folds
     
     fprintf('Done fold %d.\nTrain Errors:\nLinear:\t%f\nQuad:\t%f\nCubic:\t%f\nTest Errors:\nLinear:\t%f\nQuad:\t%f\nCubic:\t%f\n\n', ...
         i, train_error_linear(i), train_error_quadratic(i), train_error_cubic(i), test_error_linear(i), test_error_quadratic(i), test_error_cubic(i))
-    keyboard;
 end
