@@ -13,10 +13,20 @@ raw_data dir is in "~/Desktop/raw_data", set the "raw_dir" variable to
 util/face_rectification) before starting this step. In util/crop_eyes,
 run the Python script gen_file_corresp.py with the following:
 
-./gen_file_corresp <path_to_png_image_root> <path_to_out_coordinate_directory>
+./gen_file_corresp <path_to_PNG_image_root> <path_to_out_coordinate_directory>
 
 This will create a TSV file fileCorresp.txt that is of the following form:
 <path_to_png_file> <path_to_mesh_coordinates>
 
 Each mesh coordinate file contains the coordinates of a node on the face mesh
 which was fitted with FaceTracker.
+
+
+3. If you want to produce a "clean" dataset (the first image in every number is
+actually from the previous number), in util/raw_processing, run:
+
+./correct_first_eye_images.py ~/code/eyetrack_data/cropped_eyes_clean/
+
+Note that this is a DESTRUCTIVE operation, so make a copy of the cropped eyes
+directory and run the script on that. I am making a modified version that copies
+the images over for you.

@@ -1,4 +1,4 @@
-clear;
+cd ..clear;
 corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
 %%
 w = 100;
