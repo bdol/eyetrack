@@ -4216,3 +4216,4 @@
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/png_data/1027.2.E/IM_7_1.png 622 508 632 503 644 504 655 510 644 513 632 513 726 510 736 506 747 506 758 513 747 513 736 513
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/png_data/1027.2.E/IM_8_1.png 627 510 638 504 650 505 658 510 649 513 636 513 729 511 739 505 752 507 761 513 749 515 739 513
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/png_data/1027.2.E/IM_9_1.png 623 508 635 505 647 506 657 509 645 512 631 514 725 511 735 508 750 508 760 513 751 514 738 514
+/fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/png_data2/1025.2.E/IM_8_2.png 726 419 738 414 751 412 766 413 754 418 741 420 815 413 826 415 840 419 850 426 837 425 826 422
