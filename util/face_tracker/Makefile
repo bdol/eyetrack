@@ -1,15 +1,14 @@
 # Paths
-OPENCV_PATH=/home/varsha/local_installs/opencv
+OPENCV_PATH=/usr/local
 
 # Programs
 CC=
 CXX=g++
 
 # Flags
-#ARCH_FLAGS=-arch x86_64
-#CFLAGS=-Wextra -Wall -pedantic-errors $(ARCH_FLAGS) -O3
-CFLAGS=-Wextra -Wall
-#LDFLAGS=$(ARCH_FLAGS)
+ARCH_FLAGS=-arch x86_64
+CFLAGS=-Wextra -Wall -pedantic-errors $(ARCH_FLAGS) -O3
+LDFLAGS=$(ARCH_FLAGS)
 DEFINES=
 INCLUDES=-I$(OPENCV_PATH)/include -Iinclude/
 LIBRARIES=-L$(OPENCV_PATH)/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_objdetect
@@ -27,7 +26,7 @@ SOURCE_FILES=\
 
 # Source files which contain a int main(..) function
 #SOURCE_FILES_WITH_MAIN=src/exe/face_tracker.cc
-SOURCE_FILES_WITH_MAIN=src/exe/face_tracker_manual_annotate.cc
+SOURCE_FILES_WITH_MAIN=src/exe/face_tracker_eyes_from_stills.cc
 
 # End Configuration
 SOURCE_OBJECTS=$(patsubst %.cc,%.o,$(SOURCE_FILES))
@@ -39,7 +38,7 @@ ALL_OBJECTS=\
 DEPENDENCY_FILES=\
 	$(patsubst %.o,%.d,$(ALL_OBJECTS)) 
 
-all: bin/face_tracker
+all: bin/face_tracker_eyes_from_stills
 
 %.o: %.cc Makefile
 	@# Make dependecy file
@@ -49,7 +48,7 @@ all: bin/face_tracker
 
 -include $(DEPENDENCY_FILES)
 
-bin/face_tracker: $(ALL_OBJECTS)
+bin/face_tracker_eyes_from_stills: $(ALL_OBJECTS)
 	$(CXX) $(LDFLAGS) $(LIBRARIES) -o $@ $(ALL_OBJECTS)
 
 .PHONY: clean
