@@ -88,10 +88,24 @@ while cc~=27 && cc~=13
         if strcmp(current_eye, 'R')
             r_pts_cropped(current_pt_r, :) = [x y];
             r_selected = [x y];
+            if current_pt_r < 6
+                current_pt_r = current_pt_r+1;
+                r_selected = r_pts_cropped(current_pt_r, :);
+            else
+                current_eye = 'L';
+                r_cdata = repmat(colors(2, :), size(r_pts_cropped, 1), 1);
+                l_cdata = repmat(colors(1, :), size(l_pts_cropped, 1), 1);
+                figure(fig_l);
+            end
         else
             l_pts_cropped(current_pt_l, :) = [x y];
             l_selected = [x y];
+            if current_pt_l < 6
+                current_pt_l = current_pt_l+1;
+                l_selected = l_pts_cropped(current_pt_l, :);
+            end
         end
+        
     elseif cc>=28 && cc<=31 % Pressed an arrow key
         if strcmp(current_eye, 'R')
             if cc==28 % Left arrow

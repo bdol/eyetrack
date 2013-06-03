@@ -40,15 +40,18 @@ for i=1:numel(dataLocs)
     
     [l_corr r_corr] = keyboard_annotate(im, data(l_idx, :), data(r_idx, :), w, h);
     
-    fprintf(fid, '%s', imPath);
-    l_data = l_corr(:);
-    r_data = r_corr(:);
-    for j=1:numel(l_data)
-        fprintf(fid, ' %d', l_data(j));
+    if ~isempty(l_corr) && ~isempty(r_corr)    
+        fprintf(fid, '%s', imPath);
+        l_data = l_corr(:);
+        r_data = r_corr(:);
+        for j=1:numel(l_data)
+            fprintf(fid, ' %d', l_data(j));
+        end
+        for j=1:numel(r_data)
+            fprintf(fid, ' %d', r_data(j));
+        end
+        fprintf(fid, '\n');    
     end
-    for j=1:numel(r_data)
-        fprintf(fid, ' %d', r_data(j));
-    end
-    fprintf(fid, '\n');    
+    
     fclose(fid);
 end
