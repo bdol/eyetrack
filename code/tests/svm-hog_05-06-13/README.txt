@@ -15,3 +15,6 @@ Linear svm with cost value decided by xval results
 Third party libs used:
 vlfeat (for hog calculation)
 libsvm
+
+run_test.m runs the tests to find test error with a randomly picked test set
+new_run_test.m runs the tests to find test error with xval
