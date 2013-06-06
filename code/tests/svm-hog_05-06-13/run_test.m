@@ -69,8 +69,11 @@ fprintf(sprintf('Running xval for model %d\n',model));
 end
 
 %% BEST MODEL
-avg_model_xval_acc = mean(model_xval_acc);
+avg_model_xval_acc = mean(model_xval_acc,2);
 [val best_model_ind] = max(avg_model_xval_acc);
+fprintf(sprintf('Performance of best model on folds\n %g  %g  %g  %g\n',...
+    model_xval_acc(best_model_ind,1), model_xval_acc(best_model_ind,2), ...
+    model_xval_acc(best_model_ind,3), model_xval_acc(best_model_ind,4)));
 % train best model on all training data
 train_mat_left = l_ims_hog(train_indices,:);
 train_mat_right = r_ims_hog(train_indices,:);
@@ -87,14 +90,14 @@ test_mat = [test_mat_left test_mat_right];
 test_lab = [l_ims(test_indices).label];
 test_lab = test_lab(:);
 [linear_svm_pred,acc,p] = svmpredict(test_lab, test_mat, best_model);
-linear_svm_accuracy = acc(1)/100;
+linear_svm_accuracy = acc(1);
 
 %% Print results
 fprintf('Accuracy of best model = %g\n', linear_svm_accuracy);
-for i = 1:length(test_indices)
-    if(l_ims(test_indices(i)).label~=linear_svm_pred(i))
-        imshow(l_ims(test_indices(i)).img);
-        [l_ims(test_indices(i)).label linear_svm_pred(i)]
-        pause;
-    end
-end
+% for i = 1:length(test_indices)
+%     if(l_ims(test_indices(i)).label~=linear_svm_pred(i))
+%         imshow(l_ims(test_indices(i)).img);
+%         [l_ims(test_indices(i)).label linear_svm_pred(i)]
+%         pause;
+%     end
+% end
