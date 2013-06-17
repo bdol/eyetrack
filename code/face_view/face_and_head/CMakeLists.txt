@@ -44,11 +44,15 @@ ELSE(WIN32)
 
 	SET( OPENCV_INCLUDES /include ) 
 	SET( OPENCV_LIB /lib ) 
+	
 	SET( OPENNI_INCLUDES /home/biwi/gfanelli/OpenNI/Include ) 
 	SET( OPENNI_LIB /home/biwi/gfanelli/OpenNI/Platform/Linux86/Bin/Release )
 
-	#assuming freeglut installed on linux
-	LINK_DIRECTORIES( ${OPENNI_LIB} ${OPENCV_LIB} )
+	SET( FREEGLUT_LIB /home/biwi/freeglut/lib ) 
+	
+	SET( FACETRACKER_INCLUDES include/ )
+	
+	LINK_DIRECTORIES( ${OPENNI_LIB} ${OPENCV_LIB} ${FREEGLUT_LIB} )
 
 ENDIF(WIN32)
 	
