@@ -33,6 +33,7 @@ SOURCE_OBJECTS=$(patsubst %.cc,%.o,$(SOURCE_FILES))
 
 ALL_OBJECTS=\
 	$(SOURCE_OBJECTS) \
+	src/exe/svm.o\
 	$(patsubst %.cc,%.o,$(SOURCE_FILES_WITH_MAIN))
 
 DEPENDENCY_FILES=\
@@ -48,7 +49,10 @@ all: bin/face_tracker_eyes_rt
 
 -include $(DEPENDENCY_FILES)
 
-bin/face_tracker_eyes_rt: $(ALL_OBJECTS)
+svm: src/exe/svm.cpp
+	g++ -Wall -Wconversion -O3 -fPIC -c src/exe/svm.cpp -o src/exe/svm.o
+
+bin/face_tracker_eyes_rt: svm $(ALL_OBJECTS)
 	$(CXX) $(LDFLAGS) $(LIBRARIES) -o $@ $(ALL_OBJECTS)
 
 .PHONY: clean

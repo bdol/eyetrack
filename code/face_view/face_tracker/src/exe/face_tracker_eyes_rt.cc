@@ -42,57 +42,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "svm.h" 
 
 using namespace cv;
 using namespace std;
-//=============================================================================
-void Draw(cv::Mat &image,cv::Mat &shape,cv::Mat &con,cv::Mat &tri,cv::Mat &visi)
-{
-  int i,n = shape.rows/2; cv::Point p1,p2; cv::Scalar c;
 
-  //c = CV_RGB(0,0,0);
-  //for(i = 0; i < tri.rows; i++){
-    //if(visi.at<int>(tri.at<int>(i,0),0) == 0 ||
-       //visi.at<int>(tri.at<int>(i,1),0) == 0 ||
-       //visi.at<int>(tri.at<int>(i,2),0) == 0)continue;
-    //p1 = cv::Point(shape.at<double>(tri.at<int>(i,0),0),
-		   //shape.at<double>(tri.at<int>(i,0)+n,0));
-    //p2 = cv::Point(shape.at<double>(tri.at<int>(i,1),0),
-		   //shape.at<double>(tri.at<int>(i,1)+n,0));
-    //cv::line(image,p1,p2,c);
-    //p1 = cv::Point(shape.at<double>(tri.at<int>(i,0),0),
-		   //shape.at<double>(tri.at<int>(i,0)+n,0));
-    //p2 = cv::Point(shape.at<double>(tri.at<int>(i,2),0),
-		   //shape.at<double>(tri.at<int>(i,2)+n,0));
-    //cv::line(image,p1,p2,c);
-    //p1 = cv::Point(shape.at<double>(tri.at<int>(i,2),0),
-		   //shape.at<double>(tri.at<int>(i,2)+n,0));
-    //p2 = cv::Point(shape.at<double>(tri.at<int>(i,1),0),
-		   //shape.at<double>(tri.at<int>(i,1)+n,0));
-    //cv::line(image,p1,p2,c);
-  //}
-  //draw connections
-  //for(i = 0; i < con.cols; i++){
-      //if (i>=31 && i<=42) {
-          //c = CV_RGB(255,255,255);
-        //if(visi.at<int>(con.at<int>(0,i),0) == 0 ||
-           //visi.at<int>(con.at<int>(1,i),0) == 0)continue;
-        //p1 = cv::Point(shape.at<double>(con.at<int>(0,i),0),
-               //shape.at<double>(con.at<int>(0,i)+n,0));
-        //p2 = cv::Point(shape.at<double>(con.at<int>(1,i),0),
-               //shape.at<double>(con.at<int>(1,i)+n,0));
-        //cv::line(image,p1,p2,c,1);
-        //c = CV_RGB(255,0,0); cv::circle(image,p2,2,c);
-      //}
-  //}
-  //draw points
-  //for(i = 0; i < n; i++){    
-    //if(visi.at<int>(i,0) == 0)continue;
-    //p1 = cv::Point(shape.at<double>(i,0),shape.at<double>(i+n,0));
-    //c = CV_RGB(255,0,0); cv::circle(image,p1,2,c);
-  //}
-  return;
-}
+struct svm_node *x;
+int max_nr_attr = 10000;
+double *prob_estimates=NULL;
 
 void writeEyesToFile(Mat left, Mat right, string filename)
 {
@@ -127,78 +84,135 @@ void writeEyesToFile(Mat left, Mat right, string filename)
     f.close();
 }
 
-void runSVM(string filename, string output_filename)
+void runSVM(Mat left, Mat right, svm_model* model)
 {
-    stringstream cmd;
-    cmd << "./svm-predict -q -b 1 " << filename << " train.model " << output_filename;
-    system(cmd.str().c_str());
+    //stringstream cmd;
+    //cmd << "./svm-predict -q -b 1 " << filename << " train.model " << output_filename;
+    //system(cmd.str().c_str());
+    
+    double predict_label;
+
+    int svm_type=svm_get_svm_type(model);
+	int nr_class=svm_get_nr_class(model);
+
+    int *labels=(int *) malloc(nr_class*sizeof(int));
+    svm_get_labels(model,labels);
+
+    int i=0;
+    for (int j=0; j<left.cols; j++) {
+        for (int k=0; k<left.rows; k++) {
+            x[i].index = i;
+            x[i].value = left.at<float>(k, j);
+            i++;
+        }
+    }
+
+    for (int j=0; j<right.cols; j++) {
+        for (int k=0; k<right.rows; k++) {
+            x[i].index = i;
+            x[i].value = right.at<float>(k, j);
+            i++;
+        }
+    }
+
+    predict_label = svm_predict_probability(model,x, prob_estimates);
+
+    free(labels);
+
 }
 
-void debugSVM(string leftName, string rightName)
+//void debugSVM(string leftName, string rightName)
+//{
+    //Mat left = imread(leftName, CV_LOAD_IMAGE_COLOR);
+    //cvtColor(left, left, CV_RGB2GRAY);
+    //normalize(left, left, 0, 1, NORM_MINMAX, CV_32F);
+    //flip(left, left, 1);
+
+    //Mat right = imread(rightName, CV_LOAD_IMAGE_COLOR);
+    //cvtColor(right, right, CV_RGB2GRAY);
+    //normalize(right, right, 0, 1, NORM_MINMAX, CV_32F);
+    //flip(right, right, 1);
+    //writeEyesToFile(left, right, "test_eye.data");
+    //runSVM("test_eye.data", "debug.output");
+
+//}
+
+void updatePredictions(Mat &im)
 {
-    Mat left = imread(leftName, CV_LOAD_IMAGE_COLOR);
-    cvtColor(left, left, CV_RGB2GRAY);
-    normalize(left, left, 0, 1, NORM_MINMAX, CV_32F);
-    flip(left, left, 1);
-
-    Mat right = imread(rightName, CV_LOAD_IMAGE_COLOR);
-    cvtColor(right, right, CV_RGB2GRAY);
-    normalize(right, right, 0, 1, NORM_MINMAX, CV_32F);
-    flip(right, right, 1);
-    writeEyesToFile(left, right, "test_eye.data");
-    runSVM("test_eye.data", "debug.output");
-
-}
-
-void updatePredictions(Mat &im, string output_filename)
-{
-    string line;
-    ifstream preds(output_filename.c_str());
-    if (preds.is_open()) {
-        getline(preds, line); // Skip the first line which has label info
-        getline(preds, line); 
-
-        istringstream iss(line);
-        string token;
-        bool isLabel = true;
-        int predNum = 1;
-        while (std::getline(iss, token, ' '))  {
-            if (isLabel) { // Skip the first token, which is the predicted label
-                isLabel = false;
-            } else {
-                stringstream predVal;
-                switch(predNum) {
-                    float p;
-                    case 1:
-                        predVal << "L: " << token;
-                        putText(im, predVal.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
-                        p = atof(token.c_str());
-                        rectangle(im, Point(30, 40), Point(p*300.0+30, 50), Scalar(255, 0, 0), CV_FILLED);
-                        break;
-                    case 2:
-                        predVal << "R: " << token;
-                        p = atof(token.c_str());
-                        rectangle(im, Point(30, 120), Point(p*300.0+30, 130), Scalar(0, 255, 0), CV_FILLED);
-                        putText(im, predVal.str(), Point(30, 110), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+    if (prob_estimates != NULL) {
+        for (int i=0; i<3; i++) {
+            stringstream predVal;
+            int predNum = i+1;
+            switch(predNum) {
+                double p;
+                case 1:
+                    p = prob_estimates[i];
+                    predVal << "L: " << p;
+                    putText(im, predVal.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                    rectangle(im, Point(30, 40), Point(p*300.0+30, 50), Scalar(255, 0, 0), CV_FILLED);
                     break;
-                    case 3:
-                        predVal << "C: " << token;
-                        p = atof(token.c_str());
-                        rectangle(im, Point(30, 80), Point(p*300.0+30, 90), Scalar(0, 0, 255), CV_FILLED);
-                        putText(im, predVal.str(), Point(30, 70), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                case 2:
+                    p = prob_estimates[i];
+                    predVal << "R: " << p;
+                    rectangle(im, Point(30, 120), Point(p*300.0+30, 130), Scalar(0, 255, 0), CV_FILLED);
+                    putText(im, predVal.str(), Point(30, 110), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                break;
+                case 3:
+                    p = prob_estimates[i];
+                    predVal << "C: " << p;
+                    rectangle(im, Point(30, 80), Point(p*300.0+30, 90), Scalar(0, 0, 255), CV_FILLED);
+                    putText(im, predVal.str(), Point(30, 70), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
                     break;
-                }
-                predNum++;
-
             }
         }
-
     }
+    //string line;
+    //ifstream preds(output_filename.c_str());
+    //if (preds.is_open()) {
+        //getline(preds, line); // Skip the first line which has label info
+        //getline(preds, line); 
+
+        //istringstream iss(line);
+        //string token;
+        //bool isLabel = true;
+        //int predNum = 1;
+        //while (std::getline(iss, token, ' '))  {
+            //if (isLabel) { // Skip the first token, which is the predicted label
+                //isLabel = false;
+            //} else {
+                //stringstream predVal;
+                //switch(predNum) {
+                    //float p;
+                    //case 1:
+                        //predVal << "L: " << token;
+                        //putText(im, predVal.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                        //p = atof(token.c_str());
+                        //rectangle(im, Point(30, 40), Point(p*300.0+30, 50), Scalar(255, 0, 0), CV_FILLED);
+                        //break;
+                    //case 2:
+                        //predVal << "R: " << token;
+                        //p = atof(token.c_str());
+                        //rectangle(im, Point(30, 120), Point(p*300.0+30, 130), Scalar(0, 255, 0), CV_FILLED);
+                        //putText(im, predVal.str(), Point(30, 110), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                    //break;
+                    //case 3:
+                        //predVal << "C: " << token;
+                        //p = atof(token.c_str());
+                        //rectangle(im, Point(30, 80), Point(p*300.0+30, 90), Scalar(0, 0, 255), CV_FILLED);
+                        //putText(im, predVal.str(), Point(30, 70), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+                    //break;
+                //}
+                //predNum++;
+
+            //}
+        //}
+
+    //}
 
 }
 
 //=============================================================================
-void ExtractAndShowEyes(cv::Mat &image, cv::Mat &shape, cv::Mat &con, cv::Mat &visi)
+void ExtractAndShowEyes(cv::Mat &image, cv::Mat &shape, cv::Mat &con, cv::Mat &visi, svm_model* model)
 {
     int n = shape.rows/2;
     double n_points_per_eye = 6.0;
@@ -259,7 +273,7 @@ void ExtractAndShowEyes(cv::Mat &image, cv::Mat &shape, cv::Mat &con, cv::Mat &v
     cvtColor(right_eye, right_eye_gray, CV_RGB2GRAY);
     normalize(right_eye_gray, right_eye_gray, 0, 1, NORM_MINMAX, CV_32F);
     writeEyesToFile(left_eye_gray, right_eye_gray, "eyes.data");
-    runSVM("eyes.data", "test.output");
+    runSVM(left_eye_gray, right_eye_gray, model);
     
     // Rescale eyes to be bigger
     int scale = 4;
@@ -282,7 +296,7 @@ void ExtractAndShowEyes(cv::Mat &image, cv::Mat &shape, cv::Mat &con, cv::Mat &v
     //imshow("Left Eye", left_eye_gray);
     //imshow("Right Eye", right_eye_gray);
     
-    updatePredictions(image, "test.output");
+    updatePredictions(image);
 
     // Debug 
     cv::rectangle(image, lb1, lb2, c);
@@ -392,6 +406,19 @@ int main(int argc, const char** argv)
 
   //loop until quit (i.e user presses ESC)
   bool failed = true;
+
+    // Load the SVM model and alloc memory for the feature vector
+    svm_model* trained_model;
+    if ((trained_model = svm_load_model("train.model"))==0) {
+        fprintf(stderr,"can't open model file train.model\n");
+        exit(1);
+    } else {
+      printf("Successfully loaded SVM model.\n");
+    }
+    x = (struct svm_node *) malloc(max_nr_attr*sizeof(struct svm_node));
+    prob_estimates = (double *) malloc(3*sizeof(double));
+
+
   while(1){ 
     //grab image, resize and flip
     IplImage* I = cvQueryFrame(camera); if(!I)continue; frame = I;
@@ -403,7 +430,7 @@ int main(int argc, const char** argv)
     std::vector<int> wSize; if(failed)wSize = wSize2; else wSize = wSize1; 
     if(model.Track(gray,wSize,fpd,nIter,clamp,fTol,fcheck) == 0){
       int idx = model._clm.GetViewIdx(); failed = false;
-        ExtractAndShowEyes(im, model._shape, con, model._clm._visi[idx]);
+        ExtractAndShowEyes(im, model._shape, con, model._clm._visi[idx], trained_model);
     }else{
       if(show){cv::Mat R(im,cvRect(0,0,150,50)); R = cv::Scalar(0,0,255);}
       model.FrameReset(); failed = true;
@@ -421,13 +448,17 @@ int main(int argc, const char** argv)
 		  CV_FONT_HERSHEY_SIMPLEX,0.5,CV_RGB(255,255,255));
     }
 
-    // Extract eyes
-
     //show image and check for user input
     imshow("Face Tracker",im); 
 
     int c = cvWaitKey(10);
     if(c == 27)break; else if(char(c) == 'd')model.FrameReset();
-  }return 0;
+  }
+  
+    svm_free_and_destroy_model(&trained_model);
+    free(x);
+
+  
+  return 0;
 }
 //=============================================================================

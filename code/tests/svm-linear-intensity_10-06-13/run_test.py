@@ -19,7 +19,7 @@ for i in range(1, N_folds+1):
     # Parameters:
     #   -t 0: train a linear kernel
     #   -c 1E-2: the cost value C
-    subprocess.call(["./svm-train", "-t", "0", "-c", "1E-2", trainFile, "train.model"])
+    subprocess.call(["./svm-train", "-t", "0", "-b", "1", "-c", "1E-2", trainFile, "train.model"])
     # Test the SVM
-    subprocess.call(["./svm-predict", testFile, "train.model", "test.output"])
+    subprocess.call(["./svm-predict", "-b", "1", testFile, "train.model", "test.output"])
 
