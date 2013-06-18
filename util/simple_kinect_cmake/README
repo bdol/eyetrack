@@ -1,0 +1,9 @@
+To build the simple_kinect program, you must have OpenCV and libfreenect
+installed. Then carry out the following commands:
+
+mkdir build
+cd build
+cmake ..
+make
+
+The exectuable simple_kinect will be created in the build/ directory.
