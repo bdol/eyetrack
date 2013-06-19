@@ -19,6 +19,7 @@
 #include "libfreenect.h"
 #include <FaceTracker/Tracker.h>
 #include <kinect_util/KinectFreenect.h>
+#include <FaceTracker/FaceTrackerWrapper.h>
 
 using namespace cv;
 using namespace std;
@@ -26,13 +27,30 @@ using namespace std;
 KinectFreenect* kinect;
 Mat depthMat(Size(640, 480), CV_16UC1);
 Mat rgbMat(Size(1280, 1024), CV_8UC3);
+Mat leftEye, rightEye;
+
+FaceTrackerWrapper* faceTracker;
+
+bool update = true; // TODO: This is a pretty hacky way to deal with updating images on a thread
 
 void rgbCallback(uint8_t* rgb) {
+    // Get the data from the Kinect
     memcpy(rgbMat.data, rgb, 1280*1024*3*sizeof(uint8_t));
     cvtColor(rgbMat, rgbMat, CV_BGR2RGB);
+
+    if ((faceTracker->track(rgbMat))==0) { // Successfully found face
+        faceTracker->drawEyeBoxes(rgbMat, false);
+        faceTracker->getCroppedEyes(leftEye, rightEye);
+        imshow("left", leftEye);
+        imshow("right", rightEye);
+
+        update = true;
+
+    } 
 }
 
-void depthCallback(uint16_t* rgb) {
+void depthCallback(uint16_t* depth) {
+    memcpy(depthMat.data, depth, 640*480*sizeof(uint8_t));
 
 }
 
@@ -46,19 +64,26 @@ void* kinectRun(void* none) {
 
 int main(int argc, const char * argv[])
 {
+    // Set up FaceTracker
+    faceTracker = new FaceTrackerWrapper();
+
     // Set up Kinect
     kinect = new KinectFreenect();
     kinect->setRGBCallback(rgbCallback);
     kinect->setDepthCallback(depthCallback);
 
     // Spawn thread to pull images from the Kinect
+    cout << "Starting Kinect..." << endl;
     pthread_t kinectThread;
     pthread_create(&kinectThread, NULL, kinectRun, NULL);
 
     // Main thread
     while (1) {
-        imshow("RGB", rgbMat);
-        char k = cvWaitKey(5);
+        if (update) {
+            imshow("RGB", rgbMat);
+            update = false;
+        }
+        char k = cvWaitKey(100);
         if( k == 27 ) {
             break;
         }

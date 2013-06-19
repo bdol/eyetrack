@@ -7,6 +7,7 @@ set(face_tracker_sources
     PAW.cc
     PDM.cc
     Tracker.cc
+    FaceTrackerWrapper.cpp
 )
 
 add_library(face_tracker ${face_tracker_sources})
