@@ -1,0 +1,9 @@
+To build the eye_gaze program, you must have OpenCV and libfreenect
+installed. Then carry out the following commands:
+
+mkdir build
+cd build
+cmake ..
+make
+
+The exectuable eye_gaze will be created in the bin/ directory.
