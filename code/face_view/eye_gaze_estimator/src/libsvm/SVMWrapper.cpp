@@ -7,7 +7,7 @@ SVMWrapper::SVMWrapper(std::string fileName)
     prob_estimates = (double *) malloc(3*sizeof(double));
 
     if ((model = svm_load_model(fileName.c_str()))==0) {
-        fprintf(stderr,"can't open model file train.model\n");
+        fprintf(stderr,"can't open model file \n");
         exit(1);
     } else {
       printf("Successfully loaded SVM model.\n");
