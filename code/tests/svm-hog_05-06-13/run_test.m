@@ -27,10 +27,10 @@ percent = 85;
 % split into training and testing sets
 N_train=round(N_subjects*percent/100);
 training_subj = subject_numbers(randperm(N_subjects));
-testing_subj = training_subj(N_train+1:end);
-training_subj(N_train+1:end) = [];
-train_indices = find(ismember([l_ims(:).subject_index], training_subj));
-test_indices = find(ismember([l_ims(:).subject_index], testing_subj));
+% testing_subj = training_subj(N_train+1:end);
+% training_subj(N_train+1:end) = [];
+% train_indices = find(ismember([l_ims(:).subject_index], training_subj));
+% test_indices = find(ismember([l_ims(:).subject_index], testing_subj));
 % set up xval
 xval = xval_setup(l_ims, training_subj, N_folds);
 

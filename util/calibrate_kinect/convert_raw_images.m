@@ -1,4 +1,4 @@
-function [rgb_success ir_success] = convert_raw_images(ir_prefix, ir_nums, image_prefix, image_nums, folder)
+function [rgb_success ir_success] = convert_raw_images(ir_prefix, ir_nums, image_prefix, image_nums, folder, format)
 
 % Those images are stored as raw data, meaning no header.
 % The actual format depends on the configuration being used, but if you 
@@ -38,7 +38,7 @@ for image_num = image_nums
             rgb(:,:,1) = im(:,:,1)';
             rgb(:,:,2) = im(:,:,2)';
             rgb(:,:,3) = im(:,:,3)';
-            imwrite(rgb, sprintf('%s/%s%d.jpg',folder, image_prefix, count), 'jpg');
+            imwrite(rgb, sprintf('%s/%s%d.%s',folder, image_prefix, count, format), format);
             rgb_success = [rgb_success 1];
             count = count + 1;
 %             print('-djpeg', filename);
@@ -63,7 +63,7 @@ for ir_num = ir_nums
             ir = fliplr(imrotate(ir, -90));
             fclose(fp);
             ir = double(ir)./double(max(ir(:)));
-            imwrite(ir, sprintf('%s/%s%d.jpg',folder, ir_prefix, count), 'jpg');
+            imwrite(ir, sprintf('%s/%s%d.%s',folder, ir_prefix, count, format), format);
             ir_success = [ir_success 1];
             count = count + 1;
         catch exception

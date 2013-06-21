@@ -55,7 +55,7 @@ if(file~=-1)
     lr_bad_ims = data{1};
     fclose(file);
 end
-D = rdir([root_path '**\*.png']);
+D = rdir([root_path '**/*.png']);
 
 left_eye_dataset = struct('name', {}, 'label', {}, 'img',{}, 'subject_index', {});
 right_eye_dataset = struct('name', {}, 'label', {}, 'img',{}, 'subject_index', {});
