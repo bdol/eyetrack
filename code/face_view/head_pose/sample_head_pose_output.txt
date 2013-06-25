@@ -1,3 +1,4 @@
+FILE NAME, THETA_X, THETA_Y, THETA_Z, HEAD_CENTER_X, HEAD_CENTER_Y, HEAD_CENTER_Z
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/test/1200.2.P/DP_1_1.raw,-5.30294,14.3575,-1.22912,14.1651,-80.5714,776.428
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/test/1200.2.P/DP_1_2.raw,-6.15528,10.3561,-1.24535,13.3234,-80.8174,777.026
 /fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images/test/1200.2.P/DP_1_3.raw,-6.08286,11.6845,-1.79265,12.9452,-79.2956,775.692
