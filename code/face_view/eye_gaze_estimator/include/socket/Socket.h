@@ -24,7 +24,7 @@ public:
     int stopServer();
 
     int startClient(std::string);
-    int clientSendMessage(std::string);
+    int clientSendMessage(std::string message);
     int stopClient();
 
 private:

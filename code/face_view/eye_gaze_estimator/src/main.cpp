@@ -21,6 +21,7 @@
 #include <kinect_util/KinectFreenect.h>
 #include <FaceTracker/FaceTrackerWrapper.h>
 #include <libsvm/SVMWrapper.h>
+#include <socket/Socket.h>
 
 using namespace cv;
 using namespace std;
@@ -77,6 +78,15 @@ void rgbCallback(uint8_t* rgb) {
 
         double* vals = svm->predict(leftEye, rightEye);
         updateDrawnPredictions(vals);
+
+        // Send the predictions to the server
+        // TODO: change this so we're not restarting the socket every time
+        Socket* mySocket = new Socket();
+        mySocket->startClient("192.168.1.104");
+        std::stringstream ss;
+        ss << vals[0] << " " << vals[1] << " " << vals[2] << endl;
+        mySocket->clientSendMessage(ss.str());
+        mySocket->stopClient();
 
         update = true;
 

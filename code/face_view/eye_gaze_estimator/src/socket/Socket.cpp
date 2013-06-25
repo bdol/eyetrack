@@ -73,8 +73,7 @@ void* listenThreadFunc(void* noarg) {
                 } else {
                     if ((nbytes = recv(i, buf, sizeof buf, 0)) <= 0) {
                         if (nbytes == 0) {
-                            // connection closed
-                            printf("selectserver: socket %d hung up\n", i);
+                            // Connection closed
                         } else {
                             std::cerr << "Error on recv" << std::endl;
                         }
@@ -93,6 +92,7 @@ void* listenThreadFunc(void* noarg) {
 
     close(sockfd);
 
+    return 0;
 }
 
 int Socket::startServer(void (*cb)(char* buf)) {
@@ -145,6 +145,8 @@ int Socket::clientSendMessage(std::string message) {
 
 int Socket::stopClient() {
     close(sockfd);
+
+    return 0;
 }
 
 Socket::~Socket() {
