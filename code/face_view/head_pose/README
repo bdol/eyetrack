@@ -1,0 +1,34 @@
+//======================================================================
+// Name        : Head pose
+// Year        : 2013
+// Author      : Varsha
+// Desc        : Head pose program that detects the head pose of raw depth 
+//               images and writes them to a file as specified.
+//======================================================================
+
+Watch out for:
+Runs on raw depth images
+edit src/main.cpp to specify file paths
+
+Deps:
+Opencv
+
+Before you run:
+In src/main.cpp, edit variables
+output_file_path and input_file_path
+output_file_path is the full path of the desired output file
+input_file_path is the full path of the file containing a list of 'RAW' depth 
+images
+
+Compiling and Running: 
+mkdir build
+cd build
+cmake ..
+make
+../bin/head_pose
+
+Potential Issues:
+Compiling: If cmake cannot automatically determine the location of opencv, 
+you would need to edit the CMakeLists.txt file to explicitly define the 
+include and library locations.
+Run 'ccmake ..' instead of 'cmake ..' to edit these values gui style

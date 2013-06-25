@@ -5,3 +5,9 @@ images/
 *.m~
 *.o
 *.d
+.project
+.cproject
+bin/
+build/
+CMakeFiles/
+nbproject/
