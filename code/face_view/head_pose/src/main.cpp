@@ -89,7 +89,8 @@ int main(int argc, const char * argv[]) {
         cout << "Could not open output file : " << output_file_path << endl;
         return 1;
     }
-
+    
+    fout<<"FILE NAME,THETA_X,THETA_Y,THETA_Z,HEAD_CENTER_X,HEAD_CENTER_Y,HEAD_CENTER_Z"<<endl;
     string depth_file_name;
     while (fin.good()) {
         getline(fin, depth_file_name);
