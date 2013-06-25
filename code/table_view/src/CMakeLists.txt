@@ -14,10 +14,11 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Include the source code for FaceTracker, libsvm and the head pose estimator
 add_subdirectory(table_view_lib)
+add_subdirectory(socket)
 
 set(table_view_main_sources main.cpp)
 
 # Link the required libraries (OpenCV, freenect, face_tracker and libsvm) to the exectuable
 add_executable(table_view ${table_view_main_sources})
-target_link_libraries(table_view ${LIBS} table_view_lib)
+target_link_libraries(table_view ${LIBS} table_view_lib socket)
 

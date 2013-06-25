@@ -17,11 +17,23 @@
 #include <table_view_lib/KinectUtilities.h>
 #include <table_view_lib/TableObjectDetector.h>
 
+#include <socket/Socket.h>
+
 using namespace cv;
 using namespace std;
 
+void messageReceived(char* buff) {
+    cout << "Got message: " << buff << endl;
+}
+
 int main(int argc, const char * argv[])
 {
+    // Wait for connection
+    Socket* mySocket = new Socket();
+    cout << "Listening for connections from eye view program..." << endl;
+    mySocket->startServer(messageReceived);
+
+
     KinectCalibParams* kinectCalibParams = new KinectCalibParams("/Users/bdol/code/eyetrack/util/calibrate_kinect/grasp8.yml");
     TableObjectDetector* tableObjectDetector = new TableObjectDetector();
     Mat plane;
