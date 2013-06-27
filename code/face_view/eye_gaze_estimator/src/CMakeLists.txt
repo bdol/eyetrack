@@ -16,11 +16,12 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 add_subdirectory(ft_lib)
 add_subdirectory(libsvm)
 add_subdirectory(kinect_util)
+add_subdirectory(head_pose)
 add_subdirectory(socket)
 
-set(eye_gaze_sources main.cpp)
+set(eye_gaze_sources main_gl.cpp)
 
 # Link the required libraries (OpenCV, freenect, face_tracker and libsvm) to the exectuable
 add_executable(eye_gaze ${eye_gaze_sources})
-target_link_libraries(eye_gaze ${LIBS} face_tracker libsvm kinect_util socket)
+target_link_libraries(eye_gaze ${LIBS} face_tracker libsvm GLU glut kinect_util socket head_pose)
 

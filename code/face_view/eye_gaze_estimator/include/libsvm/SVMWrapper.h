@@ -1,6 +1,7 @@
 #ifndef __SVMWrapper__
 #define __SVMWrapper__
 
+#include <stdio.h>
 #include <string>
 #include <opencv/highgui.h>
 #include <libsvm/svm.h>
