@@ -38,7 +38,7 @@ for image_num = image_nums
             rgb(:,:,1) = im(:,:,1)';
             rgb(:,:,2) = im(:,:,2)';
             rgb(:,:,3) = im(:,:,3)';
-            imwrite(rgb, sprintf('%s/%s%d.%s',folder, image_prefix, count, format), format);
+            imwrite(rgb, sprintf('%s/%s%d.%s',folder, image_prefix, image_num, format), format);
             rgb_success = [rgb_success 1];
             count = count + 1;
 %             print('-djpeg', filename);
@@ -62,8 +62,8 @@ for ir_num = ir_nums
     %         depth = fliplr(imrotate(depth,-90));
             ir = fliplr(imrotate(ir, -90));
             fclose(fp);
-            ir = double(ir)./double(max(ir(:)));
-            imwrite(ir, sprintf('%s/%s%d.%s',folder, ir_prefix, count, format), format);
+%             ir = double(ir)./double(max(ir(:)));
+            imwrite(ir, sprintf('%s/%s%d.%s',folder, ir_prefix, ir_num, format), format);
             ir_success = [ir_success 1];
             count = count + 1;
         catch exception
