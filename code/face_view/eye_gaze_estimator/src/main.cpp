@@ -22,6 +22,7 @@
 #include <FaceTracker/FaceTrackerWrapper.h>
 #include <libsvm/SVMWrapper.h>
 #include <socket/Socket.h>
+#include <head_pose/head_pose.hpp>
 
 using namespace cv;
 using namespace std;
@@ -94,8 +95,8 @@ void rgbCallback(uint8_t* rgb) {
 }
 
 void depthCallback(uint16_t* depth) {
-    memcpy(depthMat.data, depth, 640*480*sizeof(uint8_t));
-
+    memcpy(depthMat.data, depth, 640*480*sizeof(uint16_t));
+    get_head_pose_estimate(depthMat);
 }
 
 
@@ -114,6 +115,9 @@ int main(int argc, const char * argv[])
 
     // Set up SVM
     svm = new SVMWrapper("../model/svm_trained.model");
+    
+    // Initialise head pose estimator
+    init_headpose();
 
     // Set up Kinect
     kinect = new KinectFreenect();
