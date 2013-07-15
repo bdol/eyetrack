@@ -29,7 +29,8 @@ cy_rgb_2 = K_rgb_2(2, 3);
 
 %% First test object detection
 im_prefix = '/fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images';
-D = imread(sprintf('%s/table_top_training_0/k2/depth_0.png',im_prefix));
+D = imread(sprintf('%s/table_top_training_0/k2/depth_3.png',im_prefix));
+im = imread(sprintf('%s/table_top_training_0/k2/rgb_3.png',im_prefix));
 D_m_2 = raw_depth_to_meters2(D);
 D_m_2(D_m_2==2047) = 0;
 % D_m_2 = double(D)./1000;
@@ -52,33 +53,34 @@ Yw(Zw>1) = [];
 Zw(Zw>1) = [];
 
 % Least squares to fit table cloud points
-[n_est ro_est Xp Yp Zp] = LSE([Xw Yw Zw]);
-table_plane = [Xw Yw Zw];
-hp = size(Xp, 1); wp = size(Xp, 2);
+% [n_est ro_est Xp Yp Zp] = LSE([Xw Yw Zw]);
+% table_plane = [Xw Yw Zw];
+[n_est n_inliers Xin Yin Zin] = ransac_fit_plane([Xw Yw Zw]);
+table_plane = [Xin(:) Yin(:) Zin(:)];
+% hp = size(Xp, 1); wp = size(Xp, 2);
 fprintf('Done!\n');
+if(debug)
+    figure;
+    subplot(1,2,1);
+    P = [table_plane(:,1)./table_plane(:,3) table_plane(:,2)./table_plane(:,3) ones(numel(Xin), 1)]';
+    pi = K_ir_2*P;
+    imagesc(D_m_2); hold on;
+    plot(pi(1,:), pi(2,:), 'r.'); hold off;
+    subplot(1,2,2);
+    P_rgb = bsxfun(@minus, R_2'*P, T_2);
+    Xobj_plot_rgb = P_rgb(1, :)';
+    Yobj_plot_rgb = P_rgb(2, :)';
+    Zobj_plot_rgb = P_rgb(3, :)';
+    % Calculate transform to rgb image plane
+    P = [Xobj_plot_rgb./Zobj_plot_rgb Yobj_plot_rgb./Zobj_plot_rgb ones(numel(Xobj_plot_rgb), 1)]';
+    pi = K_rgb_2*P;
+    imshow(im); hold on;
+    plot(pi(1,:), pi(2,:),'r.'); hold off;
+end
 
 % Now detect objects by finding points that are deviate from this plane
 fprintf('Finding objects... ');
-D = imread(sprintf('%s/table_top_training_0/k2/depth_3.png',im_prefix));
-D_m_2 = raw_depth_to_meters2(D);
-D_m_2(D_m_2==2047) = 0;
-% D_m_2 = double(D)./1000;
-
-[xx yy] = meshgrid(1:size(D, 2), 1:size(D, 1));
-X = xx(:); Y = yy(:);
-Z = D_m_2(:);
-
-[Xw Yw Zw] = im_to_world(X, Y, Z, fx_d_2, fy_d_2, cx_d_2, cy_d_2);
-% Remove bad depth points
-Xw(Z==0) = [];
-Yw(Z==0) = [];
-Zw(Z==0) = [];
-% Remove far depth points (more than 2m)
-Xw(Zw>1) = [];
-Yw(Zw>1) = [];
-Zw(Zw>1) = [];
-
-D = point_plane_dist(n_est', [Xp(1) Yp(1) Zp(1)], [Xw Yw Zw]);
+D = point_plane_dist(n_est', [Xin(1) Yin(1) Zin(1)], [Xw Yw Zw]);
 thresh = 0.02;
 obj_idx = D>thresh;
 Xobj = Xw(obj_idx);
@@ -97,9 +99,6 @@ Pobj_3 = [Xobj(L==3) Yobj(L==3) Zobj(L==3)];
 
 % Determine orientation of table so that hulls appear to sit on it
 R = determine_plane_rotation(n_est);
-
-Pplane = [Xw Yw Zw]';
-Pplane_rot = R'*Pplane;
 
 % Determine the actual hull cube location
 P = [(Xobj)'; (Yobj)'; (Zobj)'];

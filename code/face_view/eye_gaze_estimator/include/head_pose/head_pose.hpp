@@ -183,9 +183,8 @@ void init_headpose() {
     g_im3D.create(DEPTH_YRES, DEPTH_XRES, CV_32FC3);
 }
 
-void get_head_pose_estimate(Mat &depth_mat) {
+int get_head_pose_estimate(Mat &depth_mat) {
     int valid_pixels = 0;
-
     //    generate 3D image for head pose
     for (int y = 0; y < g_im3D.rows; y++) {
         Vec3f* Mi = g_im3D.ptr<Vec3f > (y);
@@ -207,6 +206,17 @@ void get_head_pose_estimate(Mat &depth_mat) {
 
     //run estimation
     g_Estimate->estimate(g_im3D, g_means, g_clusters, g_votes, g_stride, g_maxv, g_prob_th, g_larger_radius_ratio, g_smaller_radius_ratio, false, g_th);
+    
+    if(g_means.size()>0)
+    {
+        cout << g_means[0][3] << "," << g_means[0][4] << "," << g_means[0][5] << "," << g_means[0][0] << "," << g_means[0][1] << "," << g_means[0][2] << endl;
+        return 1;
+    }
+	else
+    {
+        cout<<"Unable to determine head pose"<<endl;
+        return 0;
+    }
 }
 
 #endif /* HEAD_POSE_HPP_ */

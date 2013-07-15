@@ -10,9 +10,9 @@ include_directories(${Freenect_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Freenect_LIBRARIES})
 
 # Finds location of opengl libs
-FIND_PACKAGE( OpenGL )
+#FIND_PACKAGE( OpenGL )
 #FIND_PACKAGE( GLU )
-FIND_PACKAGE( GLUT )
+#FIND_PACKAGE( GLUT )
 
 # Define the global include path
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -24,9 +24,10 @@ add_subdirectory(kinect_util)
 add_subdirectory(head_pose)
 add_subdirectory(socket)
 
-set(eye_gaze_sources main_gl.cpp)
+set(eye_gaze_sources main.cpp)
 
 # Link the required libraries (OpenCV, freenect, face_tracker and libsvm) to the exectuable
 add_executable(eye_gaze ${eye_gaze_sources})
-target_link_libraries(eye_gaze ${LIBS} face_tracker libsvm ${OpenGL_LIBRARY} ${GLUT_LIBRARY} kinect_util socket head_pose)
+#target_link_libraries(eye_gaze ${LIBS} face_tracker libsvm ${OpenGL_LIBRARY} ${GLUT_LIBRARY} kinect_util socket head_pose)
+target_link_libraries(eye_gaze ${LIBS} face_tracker libsvm kinect_util socket head_pose)
 
