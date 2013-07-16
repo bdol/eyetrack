@@ -28,7 +28,8 @@ cx_rgb_2 = K_rgb_2(1, 3);
 cy_rgb_2 = K_rgb_2(2, 3);
 
 %% First test object detection
-im_prefix = '/fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images';
+% im_prefix = '/fiddlestix/Users/varsha/Documents/ResearchEyetrackCode/eyetrack/all_images';
+im_prefix = '/Users/bdol/code/eyetrack_data';
 D = imread(sprintf('%s/table_top_training_0/k2/depth_3.png',im_prefix));
 im = imread(sprintf('%s/table_top_training_0/k2/rgb_3.png',im_prefix));
 D_m_2 = raw_depth_to_meters2(D);
