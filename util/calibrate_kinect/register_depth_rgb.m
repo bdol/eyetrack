@@ -5,7 +5,8 @@ addpath(genpath('../../MyNiViewer/Matlab'));
 params = load_calibration_params;
 
 %% subject images
-subjects = {'images/1006.2.E','images/1201.2.E', 'images/1203.2.E', 'images/1043.2.E', 'images/1037.2.E', 'images/1146.2.E', 'images/1135.2.E', 'images/1282.2.E'};
+subjects = {'images/1006.2.E'};
+% subjects = {'images/1006.2.E','images/1201.2.E', 'images/1203.2.E', 'images/1043.2.E', 'images/1037.2.E', 'images/1146.2.E', 'images/1135.2.E', 'images/1282.2.E'};
 %% Load image
 for image_ind = 1:length(subjects)
 %     % Uncomment to run on grasp video
