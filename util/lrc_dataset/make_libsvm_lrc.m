@@ -5,13 +5,12 @@
 % eyes set
 clear;
 
-outDir = '/Users/bdol/code/eyetrack_data/lrc/';
+outDir = '/Users/bdol/code/eyetrack_data/lrc_natural/';
 if ~exist(outDir, 'dir')
     mkdir(outDir)
 end
 
-subj_names = {'/Users/bdol/code/eyetrack_data/cropped_eyes_clean/'};
-[l_ims r_ims] = load_lrc_cropped_eyes('/Users/bdol/code/eyetrack_data/cropped_eyes_clean/','CenterBadImagesFile','~/code/eyetrack/code/data_processing/center_bad_ims.txt','LRBadImagesFile','~/code/eyetrack/code/data_processing/lr_bad_ims.txt');
+[l_ims r_ims] = load_lrc_cropped_eyes('/Users/bdol/code/eyetrack_data/cropped_eyes_natural_clean/');
 
 %% Setup xval partitions
 N_folds = 8;
@@ -24,7 +23,7 @@ xval = xval_setup(l_ims, training_subj, N_folds);
 %% Create concatenated intensity feature files for libsvm
 n_pix = numel(rgb2gray(l_ims(1).img));;
 
-for fold = 1:1
+for fold = 1:N_folds
     fprintf('Creating libsvm files for fold %d of %d.\n', fold, N_folds);
     train_file = fopen([outDir 'train_' num2str(fold) '.txt'], 'w');
     test_file = fopen([outDir 'test_' num2str(fold) '.txt'], 'w');

@@ -1,11 +1,11 @@
-cd ..clear;
-corresp = importdata('~/code/eyetrack/util/crop_eyes/fileCorresp.txt');
+clear;
+corresp = importdata('fileCorresp.txt');
 %%
 w = 100;
 h = 50;
 r_idx = 37:42;
 l_idx = 43:48;
-outDir = 'cropped_eyes';
+outDir = 'cropped_eyes_natural';
 
 for i=1:numel(corresp)
     line = corresp{i};
@@ -14,7 +14,7 @@ for i=1:numel(corresp)
     end
     
     [imPath corrPath] = strtok(line, ' ');
-    if isempty(strfind(imPath, '.2.E'))
+    if isempty(strfind(imPath, '.2.N'))
         continue;
     end
     % Remove space from front

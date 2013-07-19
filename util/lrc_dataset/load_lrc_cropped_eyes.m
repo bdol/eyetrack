@@ -1,22 +1,32 @@
 function [left_eye_dataset right_eye_dataset] = load_lrc_cropped_eyes(root_path, varargin)
-% Loads the dataset of cropped eyes from root_path into three sets of
+% Loads the dataset of cropped eyes from root_path into two sets of left
+% eye images and right eye images. 
+% left_eye_dataset: a struct with the following elements
+%             name: filename of loaded image
+%             label: 1 for looking left, 2 for looking right, 3 for center
+%             img: image
+%             subject_index: subject index number
 % 'looking left', 'looking right' and 'looking at the center'. Looking left
 % consists of images where subjects looking at board #1. Looking right
 % consists of images in 'Looking left', but mirrored about the vertical
 % axis. Looking at the center consists of images where subjects looking at
 % board #2
 % Usages:
-% To load the corrected dataset use the 1st one shown below:
-%  [l r c] = load_lrc_cropped_eyes(root_path);
+% To load the dataset: 
+%  [l r] = load_lrc_cropped_eyes(root_path);
+% To load the corrected dataset: 
+%  [l r] = load_lrc_cropped_eyes(root_path,'CenterBadImagesFile','<path_to_dataprocessing_directory>/data_processing/center_bad_ims.txt','LRBadImagesFile','<path_to_dataprocessing_directory>/data_processing/lr_bad_ims.txt');
 % To make changes to the dataset and load selectively after making those 
 % changes, use the ones shown below:
-%  [l r c] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1);
-%  [l r c] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1, 'CenterBadImagesFile','faulty_1.txt');
-%  [l r c] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1, 'CenterBadImagesFile','center_bad_ims.txt', 'LRBadImagesFile', 'lr_bad_ims.txt');
+%  [l r] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1);
+%  [l r] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1, 'CenterBadImagesFile','faulty_1.txt');
+%  [l r] = load_lrc_cropped_eyes(root_path, 'IdentifyBadImages',1, 'CenterBadImagesFile','center_bad_ims.txt', 'LRBadImagesFile', 'lr_bad_ims.txt');
 
 identify_bad_images = 0;
-center_bad_ims_filename = '../../data_processing/center_bad_ims.txt';
-lr_bad_ims_filename = '../../data_processing/lr_bad_ims.txt';
+% center_bad_ims_filename = '../../data_processing/center_bad_ims.txt';
+% lr_bad_ims_filename = '../../data_processing/lr_bad_ims.txt';
+center_bad_ims_filename = '';
+lr_bad_ims_filename = '';
 for i=1:2:nargin-1
     if(strcmp(varargin{i},'IdentifyBadImages'))
         identify_bad_images = varargin{i+1};
@@ -53,13 +63,14 @@ left_count = 1;
 right_count = 1;
 subjects_so_far = [];
 
+
 for i = 1:length(D)
    num = regexp(D(i).name,'.*_(\d)_(\d)_.*', 'tokens');
    if(~isempty(num))
        temp = num{1};
        cur_board_num = str2num(temp{1});
        cur_frame_num = str2num(temp{2});
-       temp =  regexp(D(i).name, '.*(\d\d\d\d\.[1-9]\.E).*','tokens');
+       temp =  regexp(D(i).name, '.*(\d\d\d\d\.[1-9]\.[NPE]).*','tokens');
        subject_num = temp{1}{1};
        temp = regexp(D(i).name, '.*(IM_\d_\d.*)', 'tokens');
        image_num = temp{1}{1};
@@ -72,8 +83,11 @@ for i = 1:length(D)
             subject_index = size(subjects_so_far,1);
        end
        if(cur_board_num==1)
+           is_bad_image = [0 0];
            % check to see if this image is on the left-right bad images list
-           is_bad_image = ismember(lr_bad_ims,{subject_num image_num});
+           if(~isempty(lr_bad_ims))
+                is_bad_image = ismember(lr_bad_ims,{subject_num image_num});
+           end
            if(~any(is_bad_image(:,1)&is_bad_image(:,2)))
                left_eye_image = regexp(D(i).name, '.*left.*');
                im = imread(D(i).name);
@@ -115,8 +129,11 @@ for i = 1:length(D)
                end
            end
        elseif(cur_board_num==2)
+           is_bad_image = [0 0];
            % check to see if this image is on the bad images list
-           is_bad_image = ismember(center_bad_ims,{subject_num image_num});
+           if(~isempty(center_bad_ims))
+                is_bad_image = ismember(center_bad_ims,{subject_num image_num});
+           end
            if(~any(is_bad_image(:,1)&is_bad_image(:,2)))
                left_eye_image = regexp(D(i).name, '.*left.*');
                im = imread(D(i).name);

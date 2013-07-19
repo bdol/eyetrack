@@ -26,7 +26,7 @@ SOURCE_FILES=\
 
 # Source files which contain a int main(..) function
 #SOURCE_FILES_WITH_MAIN=src/exe/face_tracker.cc
-SOURCE_FILES_WITH_MAIN=src/exe/face_tracker_manual_annotate.cc
+SOURCE_FILES_WITH_MAIN=src/exe/face_tracker_eyes_rt.cc
 
 # End Configuration
 SOURCE_OBJECTS=$(patsubst %.cc,%.o,$(SOURCE_FILES))
@@ -38,7 +38,7 @@ ALL_OBJECTS=\
 DEPENDENCY_FILES=\
 	$(patsubst %.o,%.d,$(ALL_OBJECTS)) 
 
-all: bin/face_tracker_manual_annotate
+all: bin/face_tracker_eyes_rt
 
 %.o: %.cc Makefile
 	@# Make dependecy file
@@ -48,7 +48,7 @@ all: bin/face_tracker_manual_annotate
 
 -include $(DEPENDENCY_FILES)
 
-bin/face_tracker_manual_annotate: $(ALL_OBJECTS)
+bin/face_tracker_eyes_rt: $(ALL_OBJECTS)
 	$(CXX) $(LDFLAGS) $(LIBRARIES) -o $@ $(ALL_OBJECTS)
 
 .PHONY: clean
