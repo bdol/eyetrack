@@ -39,6 +39,7 @@ Mat TableObjectDetector::getClosestPoints(Mat depthWorld, double depthLimit) {
     return P;
 }
 
+
 /**
  * This function generates a matrix of Z coordinates of a plane given a
  * vector of X and Y positions and a normal vector.
@@ -145,7 +146,6 @@ Mat TableObjectDetector::fitPlane(const Mat depthWorld) {
     xmax = 0.5;
     ymin = -0.5;
     ymax = 0.1;
-
     
     plane.at<double>(0, 1) = xmin;
     plane.at<double>(0, 2) = xmax;
@@ -165,6 +165,79 @@ Mat TableObjectDetector::fitPlane(const Mat depthWorld) {
     plane.at<double>(2, 4) = z4;
 
     return plane;
+}
+
+/**
+ * Fit a plane using RANSAC. c/o Varsha Shankar
+ */
+Mat TableObjectDetector::fitPlaneRANSAC(const Mat depthWorld) {
+    Mat P = getClosestPoints(depthWorld, 1.0);
+    Mat plane = Mat::zeros(3, 5, CV_64F);
+    int N = P.rows;
+    int n_iter = 30;
+    float thresh = 0.001;
+    int n_inliers = 0;
+    Mat n_est;
+
+    int current_n_inliers = 0;
+    Mat dist;
+    for (int i=0; i<n_iter; i++) {
+        // Randomly pick 3 points
+        Mat randPoints(3, 3, CV_64F);
+        for (int j=0; j<3; j++) {
+            int r_idx = rand() % N;
+            P.row(r_idx).copyTo(randPoints.row(j));
+        }
+
+        // Calculate the plane that these points lie on
+        Mat normal = (randPoints.row(0)-randPoints.row(1)).cross(randPoints.row(0)-randPoints.row(2));
+        normal = normal/cv::norm(normal);
+
+        // Calculate the distance of each point to this plane
+        Mat v(P.rows, P.cols, CV_64F);
+        for (int j=0; j<N; j++) {
+            v.row(j) = P.row(j)-randPoints.row(0);
+        }
+        transpose(normal, normal);
+        dist = cv::abs(v*normal);
+
+        // Calculate inliers
+        current_n_inliers = 0;
+        for (int j=0; j<N; j++) {
+            if (dist.at<double>(j) < thresh) {
+                current_n_inliers++;
+            }  
+        }
+
+        // Update if this is a good fit
+        if (current_n_inliers > n_inliers) {
+            n_est = normal;
+            n_inliers = current_n_inliers;
+        }
+
+        cout << "RANSAC step " << i << "/" << n_iter << endl;
+
+    }
+
+    n_est.copyTo(plane.col(0));
+    int n_inlier_pts = 0;
+    while (n_inlier_pts < 4) {
+        int r_idx = rand() % N;
+        if (dist.at<double>(r_idx) < thresh) {
+            Mat rand_pt;
+            P.row(r_idx).copyTo(rand_pt);
+            transpose(rand_pt, rand_pt);
+            rand_pt.copyTo(plane.col(n_inlier_pts+1));
+            n_inlier_pts++;
+        }
+
+
+    }
+
+
+
+    return plane;
+
 }
 
 /**
@@ -195,6 +268,28 @@ void TableObjectDetector::drawTablePlane(Mat img, Mat* plane, KinectCalibParams*
     int npt[] = {4};
     fillPoly(img, ppt, npt, 1, Scalar(255, 0, 255), 8);
     
+}
+
+void TableObjectDetector::draw3DPointsIn2D(Mat img, const Mat P, KinectCalibParams* calib) {
+    Mat Pt; P.copyTo(Pt); transpose(Pt, Pt);
+    Mat K = calib->getRGBIntrinsics();
+    Mat R; (calib->getR()).copyTo(R); transpose(R, R);
+    Mat T = calib->getT();
+    // Apply extrinsics
+    Pt = R*Pt;
+    for (int i=0; i<Pt.cols; i++) {
+        Pt.col(i) = Pt.col(i)-T;
+    }
+    
+    Mat Pim = K*Pt;
+    for (int i=0; i<Pim.cols; i++) {
+        double px = Pim.at<double>(0, i)/Pim.at<double>(2, i);
+        double py = Pim.at<double>(1, i)/Pim.at<double>(2, i);
+       
+        img.at<Vec3b>(py, px) = Vec3b(0, 0, 255);
+        
+    }
+
 }
 
 void TableObjectDetector::drawObjectPoints(Mat img, const Mat P, const Mat L, KinectCalibParams* calib) {

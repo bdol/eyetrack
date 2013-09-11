@@ -29,14 +29,15 @@ void messageReceived(char* buff) {
 int main(int argc, const char * argv[])
 {
     // Wait for connection
-    Socket* mySocket = new Socket();
-    cout << "Listening for connections from eye view program..." << endl;
-    mySocket->startServer(messageReceived);
+    //Socket* mySocket = new Socket();
+    //cout << "Listening for connections from eye view program..." << endl;
+    //mySocket->startServer(messageReceived);
 
 
     KinectCalibParams* kinectCalibParams = new KinectCalibParams("/Users/bdol/code/eyetrack/util/calibrate_kinect/grasp8.yml");
     TableObjectDetector* tableObjectDetector = new TableObjectDetector();
     Mat plane;
+
     
     // Real time:
 	Mat depthMat(Size(640,480),CV_16UC1);
@@ -70,13 +71,8 @@ int main(int argc, const char * argv[])
         if (k==112) { // p key, detect plane
             Mat depthInMeters = rawDepthToMeters(depthMat);
             Mat depthWorld = depthToWorld(depthInMeters, kinectCalibParams->getDepthIntrinsics());
-            plane = tableObjectDetector->fitPlane(depthWorld);
-
-            Mat rgbImage; rgbMat.copyTo(rgbImage);
-            tableObjectDetector->drawTablePlane(rgbImage, &plane, kinectCalibParams);
-            namedWindow("Detected Plane");
-            imshow("Detected Plane", rgbImage);
-            
+            plane = tableObjectDetector->fitPlaneRANSAC(depthWorld);
+            cout << plane << endl;
         }
         if (k==111) { // o key, detect 3 objects
             Mat depthInMeters = rawDepthToMeters(depthMat);
@@ -124,6 +120,10 @@ int main(int argc, const char * argv[])
                     B.at(i)->draw2D(rgbImageHulls, kinectCalibParams, colors[cidx]);
                 }
                 
+                Mat rgbImagePoints; rgbMat.copyTo(rgbImagePoints);
+                tableObjectDetector->drawObjectPoints(rgbImagePoints, P, L, kinectCalibParams);
+                namedWindow("Detected Objects");
+                imshow("Detected Objects", rgbImagePoints);
 
             }
             
@@ -132,10 +132,6 @@ int main(int argc, const char * argv[])
             putText(rgbImageHulls, otext.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
             imshow("Object Hulls", rgbImageHulls);
             
-//            Mat rgbImagePoints; rgbMat.copyTo(rgbImagePoints);
-//            tableObjectDetector->drawObjectPoints(rgbImagePoints, P, L, kinectCalibParams);
-//            namedWindow("Detected Objects");
-//            imshow("Detected Objects", rgbImagePoints);
             
             
             

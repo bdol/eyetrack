@@ -26,11 +26,13 @@ public:
     ~TableObjectDetector();
     
     Mat fitPlane(const Mat depthWorld);
+    Mat fitPlaneRANSAC(const Mat depthWorld);
     void drawTablePlane(Mat img, Mat* plane, KinectCalibParams* calib);
     Mat findObjects(Mat depthWorld, Mat plane);
     Mat clusterObjects(Mat P, int K);
     Mat clusterObjectsHierarchical(Mat P);
     void drawObjectPoints(Mat img, const Mat P, const Mat L, KinectCalibParams* calib);
+    void draw3DPointsIn2D(Mat img, const Mat P, KinectCalibParams* calib);
     vector<Box3d*> getHulls(const Mat P, const Mat L, const Mat plane);
     
 private:
