@@ -12,22 +12,24 @@ Box3d::Box3d(Mat P) {
     this->P = P;
 }
 
-void Box3d::draw2D(Mat img, KinectCalibParams *calib, Scalar color) {
-    Mat Pt; transpose(P, Pt);
+void Box3d::draw2D(Mat img, KinectCalibParams *calib, double scale, Scalar color) {
+    Mat Pt; transpose(this->P, Pt);
     Mat K = calib->getRGBIntrinsics();
     Mat R; (calib->getR()).copyTo(R); transpose(R, R);
     Mat T = calib->getT();
  
     // Apply extrinsics
-    P = R*Pt;
+    cout << R.rows << " " << R.cols << " " << P.rows << " " << P.cols << endl;
+    Mat P = R*Pt;
     for (int i=0; i<P.cols; i++) {
         P.col(i) = P.col(i)-T;
     }
+
     Mat Pim = K*P;
     vector<Point> pts;
     for (int i=0; i<Pim.cols; i++) {
-        Point p(Pim.col(i).at<double>(0)/Pim.col(i).at<double>(2),
-                Pim.col(i).at<double>(1)/Pim.col(i).at<double>(2));
+        Point p(scale*Pim.col(i).at<double>(0)/Pim.col(i).at<double>(2),
+                scale*Pim.col(i).at<double>(1)/Pim.col(i).at<double>(2));
         pts.push_back(p);
     }
     

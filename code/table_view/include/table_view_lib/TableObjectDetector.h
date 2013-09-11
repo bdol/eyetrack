@@ -34,12 +34,14 @@ public:
     void drawObjectPoints(Mat img, const Mat P, const Mat L, KinectCalibParams* calib);
     void draw3DPointsIn2D(Mat img, const Mat P, KinectCalibParams* calib);
     vector<Box3d*> getHulls(const Mat P, const Mat L, const Mat plane);
+    vector<Box3d*> getObjectHulls();
     
 private:
     Mat getClosestPoints(Mat depthWorld, double depthLimit);
     Mat getPlanePoints(Mat normal, double rho, Mat X, Mat Y);
     Mat pointPlaneDist(Mat depthWorld, Mat plane);
     Mat determinePlaneRotation(Mat normal);
+    vector<Box3d*> objectHulls;
 };
 
 #endif /* defined(__TableTop__TableObjectDetector__) */

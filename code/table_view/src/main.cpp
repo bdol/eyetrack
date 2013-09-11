@@ -18,31 +18,61 @@
 #include <table_view_lib/TableObjectDetector.h>
 
 #include <socket/Socket.h>
+#include <eye_gaze_lib/EyeGaze.h>
 
 using namespace cv;
 using namespace std;
 
+double rgbScale = 1.5;
+
+// Eye gaze utilities
+EyeGaze* eyeGaze = new EyeGaze();
+int gazeX = 0;
+int gazeY = 0;
+bool validGaze = false;
+
+// Debug options
+bool showEyeTarget = false; // press the e key to toggle on/off
+bool showObjectHulls = false;
+
+void mouseEvent(int evt, int x, int y, int flags, void* param){
+    if(evt==CV_EVENT_LBUTTONDOWN){
+        gazeX = x;
+        gazeY = y;
+        validGaze = true;
+    }
+}
+
 void messageReceived(char* buff) {
-    cout << "Got message: " << buff << endl;
+    string message(buff);
+    eyeGaze->parseGazeMessage(message, gazeX, gazeY);
+    if (gazeX > 0 && gazeY > 0) {
+        validGaze = true;
+    } else {
+
+    }
 }
 
 int main(int argc, const char * argv[])
 {
     // Wait for connection
-    //Socket* mySocket = new Socket();
-    //cout << "Listening for connections from eye view program..." << endl;
-    //mySocket->startServer(messageReceived);
+    Socket* mySocket = new Socket();
+    cout << "Listening for connections from eye view program..." << endl;
+    mySocket->startServer(messageReceived);
 
+    // Calibrate the eye tracker for use on this screen
+    //eyeGaze->calibrate();
 
+    // Set up the Kinect
     KinectCalibParams* kinectCalibParams = new KinectCalibParams("/Users/bdol/code/eyetrack/util/calibrate_kinect/grasp8.yml");
     TableObjectDetector* tableObjectDetector = new TableObjectDetector();
     Mat plane;
-
     
     // Real time:
 	Mat depthMat(Size(640,480),CV_16UC1);
 	Mat depthf  (Size(640,480),CV_8UC1);
 	Mat rgbMat(Size(640,480),CV_8UC3,Scalar(0));
+    Mat rgbBig;
 	Mat ownMat(Size(640,480),CV_8UC3,Scalar(0));
      
     bool die(false);
@@ -60,13 +90,30 @@ int main(int argc, const char * argv[])
     
     int num_last_objects = 0;
     vector<Mat> hullCentroids;
+    namedWindow("rgb", CV_WINDOW_AUTOSIZE);
+    cvMoveWindow("rgb", 150, 0);
+    cvSetMouseCallback("rgb", mouseEvent, 0);
+
     while (!die) {
     	device.getVideo(rgbMat);
     	device.getDepth(depthMat);
-        cv::imshow("rgb", rgbMat);
+
+        resize(rgbMat, rgbBig, Size(int(rgbMat.cols*rgbScale), int(rgbMat.rows*rgbScale)), 0, 0, INTER_LINEAR);
+        // Draw the eye target if the option is on
+        if (validGaze && showEyeTarget) {
+            circle(rgbBig, Point(gazeX, gazeY), 5, Scalar(255, 255, 255), -1);
+            circle(rgbBig, Point(gazeX, gazeY), 50, Scalar(0, 255, 0), 3);
+            circle(rgbBig, Point(gazeX, gazeY), 100, Scalar(0, 0, 255), 3);
+        }
+
+
     	depthMat.convertTo(depthf, CV_8UC1, 255.0/2048.0);
         cv::imshow("depth",depthf);
 		char k = cvWaitKey(5);
+
+        if (k==101) { // e key, toggle eye target on and off
+            showEyeTarget = !showEyeTarget;
+        }
         
         if (k==112) { // p key, detect plane
             Mat depthInMeters = rawDepthToMeters(depthMat);
@@ -78,7 +125,7 @@ int main(int argc, const char * argv[])
             Mat depthInMeters = rawDepthToMeters(depthMat);
             Mat depthWorld = depthToWorld(depthInMeters, kinectCalibParams->getDepthIntrinsics());
             Mat P = tableObjectDetector->findObjects(depthWorld, plane);
-            Mat rgbImageHulls; rgbMat.copyTo(rgbImageHulls);
+            Mat rgbImageHulls; rgbBig.copyTo(rgbImageHulls);
             double lmax = -1;
             if (!P.empty()) {
                 Mat L = tableObjectDetector->clusterObjectsHierarchical(P);
@@ -117,7 +164,7 @@ int main(int argc, const char * argv[])
                     }
                     hullCentroids.at(cidx) = B_centroid;
                     
-                    B.at(i)->draw2D(rgbImageHulls, kinectCalibParams, colors[cidx]);
+                    //B.at(i)->draw2D(rgbBig, kinectCalibParams, colors[cidx]);
                 }
                 
                 Mat rgbImagePoints; rgbMat.copyTo(rgbImagePoints);
@@ -127,15 +174,7 @@ int main(int argc, const char * argv[])
 
             }
             
-            stringstream otext;
-            otext << "Number objects detected: " << lmax+1;
-            putText(rgbImageHulls, otext.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
-            imshow("Object Hulls", rgbImageHulls);
-            
-            
-            
-            
-
+            imshow("rgb", rgbImageHulls);
         }
         
 		if( k == 27 ){ // Esc key, quit
@@ -152,8 +191,26 @@ int main(int argc, const char * argv[])
             cv::imwrite(fileDepth.str(),depthMat);
 			i_snap++;
 		}
+        if ( k == 104 ) { // h key, toggle showing object hulls
+            showObjectHulls = !showObjectHulls;
+        }
+
+
 		iter++;
         
+        if (showObjectHulls) {
+            vector<Box3d*> B = tableObjectDetector->getObjectHulls();
+            for (int i=0; i<B.size(); i++) {
+                cout << B.at(i) << endl;
+                B.at(i)->draw2D(rgbBig, kinectCalibParams, rgbScale, colors[1]);
+            }
+            stringstream otext;
+            otext << "Number objects detected: " << B.size();
+            putText(rgbBig, otext.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
+        }    
+
+        imshow("rgb", rgbBig);
+
     }
     
     device.stopVideo();

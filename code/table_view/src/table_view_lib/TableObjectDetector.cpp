@@ -470,8 +470,14 @@ vector<Box3d*> TableObjectDetector::getHulls(const Mat P, const Mat L, const Mat
         Box3d* Bk = new Box3d(Bp);
         B.push_back(Bk);
     }
+
+    this->objectHulls = B;
     
     return B;
+}
+
+vector<Box3d*> TableObjectDetector::getObjectHulls() {
+    return objectHulls;
 }
 
 Mat TableObjectDetector::determinePlaneRotation(cv::Mat normal) {

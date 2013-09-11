@@ -18,7 +18,7 @@ class Box3d
 {
 public:
     Box3d(Mat P);
-    void draw2D(Mat img, KinectCalibParams* calib, Scalar color);
+    void draw2D(Mat img, KinectCalibParams* calib, double scale, Scalar color);
     Mat P;
     
 private:
