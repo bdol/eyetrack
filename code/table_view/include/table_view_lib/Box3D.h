@@ -20,6 +20,7 @@ public:
     Box3d(Mat P);
     void draw2D(Mat img, KinectCalibParams* calib, double scale, Scalar color);
     Mat P;
+    Point get2DCentroid(KinectCalibParams *calib, double scale);
     
 private:
 

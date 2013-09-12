@@ -24,6 +24,7 @@ using namespace cv;
 using namespace std;
 
 double rgbScale = 1.5;
+double objDetectDist = 100;
 
 // Eye gaze utilities
 EyeGaze* eyeGaze = new EyeGaze();
@@ -33,7 +34,9 @@ bool validGaze = false;
 
 // Debug options
 bool showEyeTarget = false; // press the e key to toggle on/off
-bool showObjectHulls = false;
+bool showObjectHulls = false; // press the h key to toggle on/off
+bool showEyeObjDist = false; // press the d key to toggle on/off
+bool showGazeObject = false; // press the g key to toggle on/off
 
 void mouseEvent(int evt, int x, int y, int flags, void* param){
     if(evt==CV_EVENT_LBUTTONDOWN){
@@ -61,7 +64,7 @@ int main(int argc, const char * argv[])
     mySocket->startServer(messageReceived);
 
     // Calibrate the eye tracker for use on this screen
-    //eyeGaze->calibrate();
+    eyeGaze->calibrate();
 
     // Set up the Kinect
     KinectCalibParams* kinectCalibParams = new KinectCalibParams("/Users/bdol/code/eyetrack/util/calibrate_kinect/grasp8.yml");
@@ -194,6 +197,12 @@ int main(int argc, const char * argv[])
         if ( k == 104 ) { // h key, toggle showing object hulls
             showObjectHulls = !showObjectHulls;
         }
+        if ( k == 100 ) { // d key, toggle showing distance from eye target to object centroids
+            showEyeObjDist = !showEyeObjDist;
+        }
+        if ( k == 103 ) { // g key, toggle showing a hull around the object of focus
+            showGazeObject = !showGazeObject;
+        }
 
 
 		iter++;
@@ -201,13 +210,41 @@ int main(int argc, const char * argv[])
         if (showObjectHulls) {
             vector<Box3d*> B = tableObjectDetector->getObjectHulls();
             for (int i=0; i<B.size(); i++) {
-                cout << B.at(i) << endl;
                 B.at(i)->draw2D(rgbBig, kinectCalibParams, rgbScale, colors[1]);
             }
             stringstream otext;
             otext << "Number objects detected: " << B.size();
             putText(rgbBig, otext.str(), Point(30, 30), CV_FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
-        }    
+        }
+
+        if (showEyeObjDist) {
+            vector<Box3d*> B = tableObjectDetector->getObjectHulls();
+            for (int i=0; i<B.size(); i++) {
+                Point centroid = B.at(i)->get2DCentroid(kinectCalibParams, rgbScale);
+                circle(rgbBig, centroid, 5, Scalar(0, 0, 255), -1);
+                
+                double d = sqrt((gazeX - centroid.x)*(gazeX - centroid.x) + (gazeY - centroid.y)*(gazeY - centroid.y));
+                if (d<=objDetectDist) {
+                    line(rgbBig, Point(gazeX, gazeY), centroid, Scalar(0, 255, 0), 2, 8);
+                } else {
+                    line(rgbBig, Point(gazeX, gazeY), centroid, Scalar(0, 0, 255), 2, 8);
+                }
+            }
+
+        }
+
+        if (showGazeObject) {
+            vector<Box3d*> B = tableObjectDetector->getObjectHulls();
+            for (int i=0; i<B.size(); i++) {
+                Point centroid = B.at(i)->get2DCentroid(kinectCalibParams, rgbScale);
+                
+                double d = sqrt((gazeX - centroid.x)*(gazeX - centroid.x) + (gazeY - centroid.y)*(gazeY - centroid.y));
+                if (d<=objDetectDist) {
+                    B.at(i)->draw2D(rgbBig, kinectCalibParams, rgbScale, colors[1]);
+                }
+            }
+
+        }
 
         imshow("rgb", rgbBig);
 
