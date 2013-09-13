@@ -21,6 +21,7 @@ public:
     void draw2D(Mat img, KinectCalibParams* calib, double scale, Scalar color);
     Mat P;
     Point get2DCentroid(KinectCalibParams *calib, double scale);
+    vector<Point> get2DPoints(KinectCalibParams* calib);
     
 private:
 

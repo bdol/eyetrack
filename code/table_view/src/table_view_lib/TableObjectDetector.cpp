@@ -315,11 +315,76 @@ void TableObjectDetector::drawObjectPoints(Mat img, const Mat P, const Mat L, Ki
     }
 }
 
-Mat TableObjectDetector::clusterObjects(Mat P, int K) {
+Mat TableObjectDetector::clusterObjects(Mat P, int K, bool removeOutliers) {
     Mat L;
     int attempts = 5;
     P.convertTo(P, CV_32F);
     kmeans(P, K, L, TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10000, 0.0001), attempts, KMEANS_PP_CENTERS);
+
+    // We remove outliers that are outside a number of standard deviations away
+    // from the object centroid. We do this by just setting their cluster label
+    // to -1
+    
+    if (removeOutliers) {
+        float numStdDevs = 3;
+        float maxDist = 0.1;
+
+        // Caluclate centroids
+        vector<Mat> clusterData;
+        Mat clusterCentroids(K, 3, CV_32F);
+        for (int k=0; k<K; k++) {
+            Mat D = Mat(0, 3, CV_64F);
+            for (int i=0; i<L.rows; i++) {
+                if (L.at<int>(i)==k) {
+                    D.push_back(P.row(i));
+                }
+            }
+            clusterData.push_back(D);
+            reduce(D, clusterCentroids.row(k), 0, CV_REDUCE_AVG);
+        }
+
+
+        // Now calculate distances of each point, and the std. devs. of each
+        // cluster
+        Mat Dist = Mat::zeros(P.rows, 1, CV_32F);
+        vector<Mat> centroidDistances;
+        for (int k=0; k<K; k++) {
+            centroidDistances.push_back(Mat(0, 1, CV_32F));
+        }
+        for (int i=0; i<L.rows; i++) {
+            Mat centroid = clusterCentroids.row(L.at<int>(i));
+            Mat pt = P.row(i);
+            int k = L.at<int>(i);
+            float d = std::sqrt(
+                    std::pow(pt.at<float>(0) - centroid.at<float>(0), 2) + 
+                    std::pow(pt.at<float>(1) - centroid.at<float>(1), 2) + 
+                    std::pow(pt.at<float>(2) - centroid.at<float>(2), 2) );
+
+            Dist.at<float>(i) = d;
+            centroidDistances.at(k).push_back(d);
+        }
+        for (int k=0; k<K; k++) {
+            Mat ignore;
+            Mat std_dev;
+            meanStdDev(centroidDistances.at(k), ignore, std_dev);
+            float k_std = std_dev.at<Scalar>(0)(0);
+
+            for (int i=0; i<P.rows; i++) {
+                if (L.at<int>(i) == k) {
+                    //if (Dist.at<float>(i) > numStdDevs*k_std) {
+                    if (Dist.at<float>(i) > maxDist) {
+                        L.at<int>(i) = -1;
+                    }
+                }
+            }
+        }
+
+        // Now compute standard deviations for all clusters
+        //Mat centroidStdDevs = Mat::zeros(K, 1);
+        //for (int k=0; k<K; k++) {
+
+        //}
+    }
     
     return L;
 }
@@ -327,7 +392,7 @@ Mat TableObjectDetector::clusterObjects(Mat P, int K) {
 /**
  * Run hierarchical k-means with a distance threshold of 0.15 meters
  */
-Mat TableObjectDetector::clusterObjectsHierarchical(cv::Mat P) {
+Mat TableObjectDetector::clusterObjectsHierarchical(cv::Mat P, int max_clusters) {
     Mat L = Mat::zeros	(P.rows, 1, CV_32S);
     double dthresh = 0.15;
     int currentClusterNum = 0;
@@ -347,7 +412,11 @@ Mat TableObjectDetector::clusterObjectsHierarchical(cv::Mat P) {
         
     
     // Run hierarchical k-means
-    for (int t=0; t<num_iter; t++) {        
+    for (int t=0; t<num_iter; t++) {
+        if (currentClusterNum == max_clusters) {
+            return L;
+        }
+
         if (c_stack.empty()) {
             return L;
         }
@@ -404,6 +473,7 @@ Mat TableObjectDetector::clusterObjectsHierarchical(cv::Mat P) {
             
             c_stack.push(C0);
             c_stack.push(C1);
+
         }
         
     }

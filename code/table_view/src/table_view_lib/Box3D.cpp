@@ -49,6 +49,29 @@ void Box3d::draw2D(Mat img, KinectCalibParams *calib, double scale, Scalar color
     line(img, pts.at(4), pts.at(7), color);
 }
 
+vector<Point> Box3d::get2DPoints(KinectCalibParams* calib)
+{
+    Mat Pt; transpose(this->P, Pt);
+    Mat K = calib->getRGBIntrinsics();
+    Mat R; (calib->getR()).copyTo(R); transpose(R, R);
+    Mat T = calib->getT();
+ 
+    // Apply extrinsics
+    Mat P = R*Pt;
+    for (int i=0; i<P.cols; i++) {
+        P.col(i) = P.col(i)-T;
+    }
+    Mat Pim = K*P;
+    vector<Point> pts;
+    for (int i=0; i<Pim.cols; i++) {
+        Point p(Pim.col(i).at<double>(0)/Pim.col(i).at<double>(2),
+                Pim.col(i).at<double>(1)/Pim.col(i).at<double>(2));
+        pts.push_back(p);
+    }
+
+    return pts;
+}
+
 Point Box3d::get2DCentroid(KinectCalibParams *calib, double scale) {
     Mat Pmean; reduce(P, Pmean, 0, CV_REDUCE_AVG);
     Mat K = calib->getRGBIntrinsics();

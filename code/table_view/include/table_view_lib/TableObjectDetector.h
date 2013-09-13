@@ -10,6 +10,7 @@
 #define __TableTop__TableObjectDetector__
 
 #include <iostream>
+#include <cmath>
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "KinectCalibParams.h"
@@ -29,8 +30,8 @@ public:
     Mat fitPlaneRANSAC(const Mat depthWorld);
     void drawTablePlane(Mat img, Mat* plane, KinectCalibParams* calib);
     Mat findObjects(Mat depthWorld, Mat plane);
-    Mat clusterObjects(Mat P, int K);
-    Mat clusterObjectsHierarchical(Mat P);
+    Mat clusterObjects(Mat P, int K, bool removeOutliers);
+    Mat clusterObjectsHierarchical(Mat P, int max_clusters);
     void drawObjectPoints(Mat img, const Mat P, const Mat L, KinectCalibParams* calib);
     void draw3DPointsIn2D(Mat img, const Mat P, KinectCalibParams* calib);
     vector<Box3d*> getHulls(const Mat P, const Mat L, const Mat plane);

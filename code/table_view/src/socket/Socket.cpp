@@ -27,7 +27,7 @@ void* listenThreadFunc(void* noarg) {
     int newfd;
     struct sockaddr_storage remoteaddr;
     int nbytes;
-    char buf[256];
+    char buf[1024];
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -81,6 +81,7 @@ void* listenThreadFunc(void* noarg) {
                         FD_CLR(i, &master); 
 
                     } else {
+                        buf[nbytes] = '\0';
                         if (extRecvCb != NULL) {
                             extRecvCb(buf);
                         }
